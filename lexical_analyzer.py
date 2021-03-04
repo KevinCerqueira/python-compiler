@@ -65,21 +65,37 @@ class LexicalAnalyzer():
         # while que lê o arquivo inteiro
         while(line_file):
             index = 0
-            lenght_file = len(line_file)
+            length_file = len(line_file)
             
             # while que lê linha por linha
-            while(index < lenght_file):
+            while(index < length_file):
                 current_index = line_file[index]
                 next_index = None
 
-                if((index + 1) < lenght_file):
+                if((index + 1) < length_file):
                     next_index = line_file[index+1]
                 
                 if(self.isDelimiter(current_index)):
                     write_file.write('{}{} DEL {} \n'.format(line_index_formated, line_index, current_index))
                 elif(current_index == '/' and next_index == '/'):
-                    index = lenght_file
-                
+                    index = length_file
+                elif(current_index == '*' and next_index == '/'):
+                    check = True
+                    first_line = line_index
+                    while(check and not(current_index == '/' and next_index == '*')):
+                        if((index +2 ) < length_file):
+                            index += 1
+                            current_index = line_file[index] 
+                            next_index = line_file[index+1]
+                        else:
+                            line_file = read_file.readline()
+                            length_file = len(line_file)
+                            line_index += 1
+                            index = - 1
+                            if(not line_file):
+                                write_file.write ('ERRO Comentário de bloco não fechado adequadamente | | Linha -> {}'.format(first_line))
+                                check = False
+
                 index += 1
             
             line_file = read_file.readline()
