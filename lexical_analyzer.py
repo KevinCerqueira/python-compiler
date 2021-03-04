@@ -79,10 +79,10 @@ class LexicalAnalyzer():
                     write_file.write('{}{} DEL {} \n'.format(line_index_formated, line_index, current_index))
                 elif(current_index == '/' and next_index == '/'):
                     index = length_file
-                elif(current_index == '*' and next_index == '/'):
+                elif(current_index == '/' and next_index == '*'):
                     check = True
                     first_line = line_index
-                    while(check and not(current_index == '/' and next_index == '*')):
+                    while(check and not(current_index == '*' and next_index == '/')):
                         if((index +2 ) < length_file):
                             index += 1
                             current_index = line_file[index] 
