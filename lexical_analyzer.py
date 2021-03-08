@@ -8,7 +8,8 @@ import string
 class LexicalAnalyzer():
 
     reservedWords = ['var', 'const', 'typedef', 'struct', 'extends', 'procedure', 'function', 'start', 'return', 'if', 'else', 'then', 'while', 'read', 'print', 'int', 'real', 'boolean', 'string', 'true', 'false', 'global', 'local']
-    symbols = [" ","!","#","$","%","&","'","(",")","*","+",",","-",".","/","0","1","2","3","4","5","6","7","8","9",":",";","<","=",">","?","@","A","B","C","D","E","F","G","H","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","[","\\","]","^","_","`","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z","{","|","}","~"]
+    symbols = ''' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHJKLMNOPQRSTUVXWYZ[\]^_`abcdefghijklmnopqrstuvxwyz{|}~'''
+    letters = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z"]
     operators = ['+', '-', '*', '/', '++', '--', '==', '!=', '>', '>=', '<', '<=', '=', '&&', '||', '!']
     digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     delimiters = [';', ',', '(',')', '{', '}', '[', ']']
@@ -16,35 +17,36 @@ class LexicalAnalyzer():
     file_input = 'input.txt'
     file_output = 'output.txt'
 
-    def isReserved(self, word):
-        if word in self.reservedWords:
+    def isReserved(self, index):
+        if index in self.reservedWords:
             return True
         return False
-        # return self.reservedWords.find(word)
 
-    def isSymbol(self, word):
-        if word in self.symbols:
+    def isSymbol(self, index):
+        if index in self.symbols:
             return True
         return False
-        # return self.symbols.find(word)
 
-    def isOperator(self, word):
-        if word in self.operators:
+    def isLetter(self, index):
+        if index in self.letters:
             return True
         return False
-        # return self.operators.find(word)
 
-    def isDigit(self, word):
-        if word in self.digits:
+    def isOperator(self, index):
+        if index in self.operators:
             return True
         return False
-        # return self.digits.find(word)
 
-    def isDelimiter(self, word):
-        if word in self.delimiters:
+    def isDigit(self, index):
+        if index in self.digits:
             return True
         return False
-        # return self.delimiters.find(word)
+
+    def isDelimiter(self, index):
+        if index in self.delimiters:
+            return True
+        return False
+
     def openFiles(self):
         try:
             read_file = open(self.file_input, 'r')
@@ -77,8 +79,10 @@ class LexicalAnalyzer():
                 
                 if(self.isDelimiter(current_index)):
                     write_file.write('{}{} DEL {} \n'.format(line_index_formated, line_index, current_index))
+
                 elif(current_index == '/' and next_index == '/'):
                     index = length_file
+                
                 elif(current_index == '/' and next_index == '*'):
                     check = True
                     first_line = line_index
@@ -93,8 +97,39 @@ class LexicalAnalyzer():
                             line_index += 1
                             index = - 1
                             if(not line_file):
-                                write_file.write ('ERRO Comentário de bloco não fechado adequadamente | | Linha -> {}'.format(first_line))
+                                write_file.write ('ERRO Comentario de bloco não fechado adequadamente - Linha -> {} | Coluna -> {}\n'.format(first_line, index))
                                 check = False
+                elif(current_index == string.punctuation[1]):
+                    index += 1
+                    check = False
+                    index_last_quotes = 0
+                    navigator = index
+                    
+                    while(navigator < len(line_file)):
+                        index_last_quotes += 1
+                        if(line_file[navigator] == string.punctuation[1]):
+                            check = True
+                            break
+                        navigator += 1
+                            
+                    if(not check):
+                        write_file.write('ERRO Cadeia de caracteres mal formada - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
+                    else:
+                        index_last_quotes += index
+                        inside_quotes = ''''''
+                        navigator = index
+                        index = index_last_quotes
+                        while(navigator < index_last_quotes - 1):
+                            inside_quotes += (line_file[navigator])
+                            navigator += 1
+                        for iterator in inside_quotes:
+                            if(not self.isSymbol(iterator)):
+                                write_file.write('ERRO Caractere invalido - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
+                                check = False
+                                break
+                        if(check):
+                            write_file.write('{}{} CAD {} \n'.format(line_index_formated, line_index, inside_quotes))
+
 
                 index += 1
             

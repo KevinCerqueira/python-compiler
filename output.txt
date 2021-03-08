@@ -1,9 +1,11 @@
-01 DEL ; 
-03 DEL ; 
-07 DEL ( 
-07 DEL ) 
-07 DEL ( 
-07 DEL ) 
-08 DEL ( 
-08 DEL ) 
-08 DEL ; 
+02 DEL ( 
+02 DEL ) 
+03 DEL { 
+05 DEL { 
+06 CAD cl'audio  
+07 CAD aspa\ 
+ERRO Cadeia de caracteres mal formada - Linha -> 7 | Coluna -> 27
+08 CAD  Eduardo  
+ERRO Cadeia de caracteres mal formada - Linha -> 8 | Coluna -> 40
+09 DEL } 
+10 DEL } 
