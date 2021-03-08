@@ -4,6 +4,43 @@
 
 import sys
 import string
+'''
+    string.punctuation
+    00 ! 
+    01 "
+    02 #
+    03 $
+    04 %
+    05 [
+    06 &
+    07 '
+    08 (
+    09 )
+    10 *
+    11 +
+    12 ,
+    13  
+    14 -
+    15 .
+    16 /
+    17 :
+    18 ;
+    19 <
+    20 =
+    21 >
+    22 ?
+    23 @
+    24 [
+    25 \
+    26 ]
+    27 ^
+    28 _
+    29 `
+    30 {
+    31 |
+    32 }
+    33 ~
+'''
 
 class LexicalAnalyzer():
 
@@ -54,7 +91,7 @@ class LexicalAnalyzer():
             return [read_file, write_file]
         except:
             write_file = open(self.file_output, 'w')
-            write_file.write('ERRO Não foi possível ler o arquivo de entrada!')
+            write_file.write('[ERRO] Não foi possível ler o arquivo de entrada!')
             sys.exit()
 
     def start(self):
@@ -67,45 +104,46 @@ class LexicalAnalyzer():
         # while que lê o arquivo inteiro
         while(line_file):
             index = 0
-            length_file = len(line_file)
+            length_line = len(line_file)
             
             # while que lê linha por linha
-            while(index < length_file):
+            while(index < length_line):
                 current_index = line_file[index]
                 next_index = None
 
-                if((index + 1) < length_file):
+                if((index + 1) < length_line):
                     next_index = line_file[index+1]
                 
                 if(self.isDelimiter(current_index)):
                     write_file.write('{}{} DEL {} \n'.format(line_index_formated, line_index, current_index))
 
                 elif(current_index == '/' and next_index == '/'):
-                    index = length_file
+                    index = length_line
                 
                 elif(current_index == '/' and next_index == '*'):
                     check = True
                     first_line = line_index
                     while(check and not(current_index == '*' and next_index == '/')):
-                        if((index +2 ) < length_file):
+                        if((index +2 ) < length_line):
                             index += 1
                             current_index = line_file[index] 
                             next_index = line_file[index+1]
                         else:
                             line_file = read_file.readline()
-                            length_file = len(line_file)
+                            length_line = len(line_file)
                             line_index += 1
                             index = - 1
                             if(not line_file):
-                                write_file.write ('ERRO Comentario de bloco não fechado adequadamente - Linha -> {} | Coluna -> {}\n'.format(first_line, index))
+                                write_file.write ('[ERRO] CML - Comentario de bloco não fechado adequadamente - Linha -> {} | Coluna -> {}\n'.format(first_line, index))
                                 check = False
+
                 elif(current_index == string.punctuation[1]):
                     index += 1
                     check = False
                     index_last_quotes = 0
                     navigator = index
                     
-                    while(navigator < len(line_file)):
+                    while(navigator < length_line):
                         index_last_quotes += 1
                         if(line_file[navigator] == string.punctuation[1]):
                             check = True
@@ -113,7 +151,7 @@ class LexicalAnalyzer():
                         navigator += 1
                             
                     if(not check):
-                        write_file.write('ERRO Cadeia de caracteres mal formada - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
+                        write_file.write('[ERRO] CMF - Cadeia de caracteres mal formada - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
                     else:
                         index_last_quotes += index
                         inside_quotes = ''''''
@@ -124,11 +162,69 @@ class LexicalAnalyzer():
                             navigator += 1
                         for iterator in inside_quotes:
                             if(not self.isSymbol(iterator)):
-                                write_file.write('ERRO Caractere invalido - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
+                                write_file.write('[ERRO] CTI - Caractere invalido - Linha -> {} | Coluna -> {}\n'.format(line_index, index))
                                 check = False
                                 break
                         if(check):
                             write_file.write('{}{} CAD {} \n'.format(line_index_formated, line_index, inside_quotes))
+
+                elif(self.isDigit(current_index)):
+                    current_character = current_index
+                    maybe_signal = ''
+
+                    if(line_file[index - 1] in ['-', '+']):
+                        maybe_signal = line_file[index - 1]
+                    elif((line_file[index - 2] in ['-', '+'] and line_file[index - 1] == ' ')):
+                        maybe_signal = line_file[index - 2]
+
+                    index += 1
+                    check_index = 0
+                    current_index = line_file[index]
+                    valid = False
+
+                    while (self.isDigit(current_index) and (index + 1 < length_line)):
+                        current_character += current_index
+                        index += 1
+                        current_character = line_file[index]
+
+                    if(current_index == '.'):
+                        if((index + 1) < length_line):
+                            current_character += current_index
+                            index += 1
+                            current_index = line_file[index]
+                            while(self.isDigit(current_index) and index < length_line - 1):
+                                check_index += 1
+                                current_character += current_index
+                                index += 1
+                                current_index = line_file[index]
+                            
+                            if(current_index == '.'):
+                                check_index = 0
+                                while(index < length_line - 1):
+                                    index += 1
+                                    current_index = line_file[index]
+                                    if(self.isDelimiter(current_index) or current_index == string.punctuation[13]):
+                                        index -= 1
+                                        break
+                        else:
+                            valid = False
+
+                        if(check_index > 0):
+                            valid = True
+                        else:
+                            valid = False
+                            
+                    else:
+                        valid = True
+                        if(not self.isDigit(current_index)):
+                            index -= 1
+                            
+                    if(valid):
+                        write_file.write('{}{} NMR {} \n'.format(line_index_formated, line_index, maybe_signal + current_character))
+                    else:
+                        write_file.write('[ERRO] NMF - Numero mal formado - Linha -> {} | Coluna -> {}'.format(line_index, index))
+                        
+
 
 
                 index += 1

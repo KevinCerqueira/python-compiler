@@ -1,11 +1,22 @@
-02 DEL ( 
-02 DEL ) 
-03 DEL { 
-05 DEL { 
-06 CAD cl'audio  
-07 CAD aspa\ 
-ERRO Cadeia de caracteres mal formada - Linha -> 7 | Coluna -> 27
-08 CAD  Eduardo  
-ERRO Cadeia de caracteres mal formada - Linha -> 8 | Coluna -> 40
-09 DEL } 
+03 DEL ( 
+03 DEL ) 
+04 DEL { 
+06 DEL { 
+07 DEL ; 
+08 DEL ; 
+09 DEL , 
+09 DEL ; 
 10 DEL } 
+[ERRO] NMF - Numero mal formado - Linha -> 12 | Coluna -> 912 DEL ; 
+[ERRO] NMF - Numero mal formado - Linha -> 13 | Coluna -> 913 DEL ; 
+14 NMR -1 
+14 DEL ; 
+15 NMR -1.2 
+16 NMR 5 
+16 DEL ; 
+17 NMR 9 
+17 DEL ; 
+18 NMR 1 
+18 NMR -5 
+18 DEL ; 
+20 DEL } 
