@@ -260,8 +260,8 @@ class LexicalAnalyzer():
 
                     if(line_file[index - 1] in ['-', '+']):
                         maybe_signal = line_file[index - 1]
-                    elif((line_file[index - 2] in ['-', '+'] and line_file[index - 1] == ' ')):
-                        maybe_signal = line_file[index - 2]
+                    # elif((line_file[index - 2] in ['-', '+'] and line_file[index - 1] == ' ')):
+                    #     maybe_signal = line_file[index - 2]
 
                     index += 1
                     check_index = 0
