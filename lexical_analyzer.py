@@ -47,7 +47,9 @@ class LexicalAnalyzer():
     reservedWords = ['var', 'const', 'typedef', 'struct', 'extends', 'procedure', 'function', 'start', 'return', 'if', 'else', 'then', 'while', 'read', 'print', 'int', 'real', 'boolean', 'string', 'true', 'false', 'global', 'local']
     symbols = ''' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHJKLMNOPQRSTUVXWYZ[\]^_`abcdefghijklmnopqrstuvxwyz{|}~'''
     letters = ["A","B","C","D","E","F","G","H","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z"]
-    operators = ['+', '-', '*', '/', '++', '--', '==', '!=', '>', '>=', '<', '<=', '=', '&&', '||', '!']
+    operatorsArithmetic = ['+', '-', '*', '/', '++', '--']
+    operatorsRelational = ['==', '!=', '>', '>=', '<', '<=', '=']
+    operatorsLogical = ['&&', '||', '!']
     digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     delimiters = [';', ',', '(',')', '{', '}', '[', ']']
 
@@ -69,8 +71,18 @@ class LexicalAnalyzer():
             return True
         return False
 
-    def isOperator(self, index):
-        if index in self.operators:
+    def isOperatorArithmetic(self, index):
+        if index in self.operatorsArithmetic:
+            return True
+        return False
+    
+    def isOperatorRelational(self, index):
+        if index in self.operatorsRelational:
+            return True
+        return False
+    
+    def isOperatorLogical(self, index):
+        if index in self.operatorsLogical:
             return True
         return False
 
@@ -210,13 +222,13 @@ class LexicalAnalyzer():
 
                     index += 1
                     check_index = 0
-                    current_index = line_file[index]
+                    current_index = next_index
                     valid = False
 
                     while (self.isDigit(current_index) and (index + 1 < length_line)):
                         current_character += current_index
                         index += 1
-                        current_character = line_file[index]
+                        current_index = line_file[index]
 
                     if(current_index == '.'):
                         if((index + 1) < length_line):
@@ -254,7 +266,25 @@ class LexicalAnalyzer():
                         write_file.write('{} NMR {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
                     else:
                         write_file.write('[ERRO] Linha {}:{} | NMF - Numero mal formado'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))        
-                        
+
+                elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
+                    write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                    index += 1
+                elif(self.isOperatorArithmetic(current_index)):
+                    write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
+
+                elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
+                    write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                    index += 1
+                elif(self.isOperatorRelational(current_index)):
+                    write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
+
+                elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
+                    write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                    index += 1
+                elif(self.isOperatorLogical(current_index)):
+                    write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
+                            
 
                 index += 1
             
