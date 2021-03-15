@@ -4,6 +4,7 @@
 
 import sys
 import string
+import os
 '''
     string.punctuation
     00 ! 
@@ -12,8 +13,8 @@ import string
     03 $
     04 %
     05 [
-    06 &
-    07 '
+    06 '
+    07 &
     08 (
     09 )
     10 *
@@ -53,8 +54,8 @@ class LexicalAnalyzer():
     digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     delimiters = [';', ',', '(',')', '{', '}', '[', ']']
 
-    file_input = 'input.txt'
-    file_output = 'output.txt'
+    dir_input = '\\input\\'
+    dir_output = '\\output\\'
 
     def isReserved(self, index):
         if index in self.reservedWords:
@@ -101,244 +102,269 @@ class LexicalAnalyzer():
             return True
         return False
 
-    def openFiles(self):
+    def openFiles(self, file_input):
         try:
-            read_file = open(self.file_input, 'r')
-            write_file = open(self.file_output, 'w')
+            read_file = open(os.getcwd() + self.dir_input + file_input, 'r')
+            write_file = open(os.getcwd() + self.dir_output + str(file_input).replace('entrada', 'saida'), 'w')
             return [read_file, write_file]
         except:
-            write_file = open(self.file_output, 'w')
-            write_file.write('[ERRO] Linha {} | Coluna {} | Não foi possível ler o arquivo de entrada!')
+            write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('entrada', 'saida'), 'w')
+            write_file.write('[ERRO] Não foi possível ler o arquivo de entrada!')
             sys.exit()
 
-    def start(self):
-        read_file = self.openFiles()[0]
-        write_file = self.openFiles()[1]
+    def openPrograms(self):
+        if(not (os.path.isdir(os.getcwd() + self.dir_input))):
+            print('[ERRO] Não foi possível encontrar o diretório de entrada!')
+            sys.exit()
 
-        line_file = read_file.readline()
-        line_index = 1
+        if(not (os.path.isdir(os.getcwd() + self.dir_output))):
+            os.mkdir(os.getcwd() + self.dir_output)
         
-        # while que lê o arquivo inteiro
-        while(line_file):
-            index = 0
-            length_line = len(line_file)
-            
-            # while que lê linha por linha
-            while(index < length_line):
-                current_index = line_file[index]
-                next_index = None
+        files_programs = []
+        for iterator in os.listdir(os.getcwd() + self.dir_input):
+            if(iterator.count('.txt')):
+                files_programs.append(iterator)
 
-                if((index + 1) < length_line):
-                    next_index = line_file[index+1]
+        if(len(files_programs) < 1):
+            print('[WARNING] Não há arquivos para ler!')
+            sys.exit()
+        return files_programs
+
+    def start(self):
+        files_programs = self.openPrograms()
+        
+        for file_program in files_programs:
+            read_file = self.openFiles(file_program)[0]
+            write_file = self.openFiles(file_program)[1]
+
+            errors = "\n"
+
+            line_file = read_file.readline()
+            line_index = 1
+
+            # while que lê o arquivo inteiro
+            while(line_file):
+                index = 0
+                length_line = len(line_file)
                 
-                if(self.isDelimiter(current_index)):
-                    write_file.write('{} DEL {} \n'.format(str(line_index).zfill(2), current_index))
+                # while que lê linha por linha
+                while(index < length_line):
+                    current_index = line_file[index]
+                    next_index = None
 
-                elif(current_index == '/' and next_index == '/'):
-                    index = length_line
-                
-                elif(current_index == '/' and next_index == '*'):
-                    check = True
-                    first_line = line_index
-                    while(check and not(current_index == '*' and next_index == '/')):
-                        if((index +2 ) < length_line):
-                            index += 1
-                            current_index = line_file[index] 
-                            next_index = line_file[index+1]
-                        else:
-                            line_file = read_file.readline()
-                            length_line = len(line_file)
-                            line_index += 1
-                            index = - 1
-                            if(not line_file):
-                                write_file.write ('[ERRO] Linha {} | Coluna {} | CML - Comentario de bloco não fechado adequadamente\n'.format(first_line, str(index + 1).zfill(2)))
-                                check = False
-
-                elif(current_index == string.punctuation[1]):
-                    index += 1
-                    check = False
-                    index_last_quotes = 0
-                    navigator = index
+                    if((index + 1) < length_line):
+                        next_index = line_file[index+1]
                     
-                    while(navigator < length_line):
-                        index_last_quotes += 1
-                        if(line_file[navigator] == string.punctuation[1]):
-                            check = True
-                            break
-                        navigator += 1
-                            
-                    if(not check):
-                        write_file.write('[ERRO] Linha {} | Coluna {} | CMF - Cadeia de caracteres mal formada\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
-                    else:
-                        index_last_quotes += index
-                        inside_quotes = ''''''
-                        navigator = index
-                        index = index_last_quotes
-                        while(navigator < index_last_quotes - 1):
-                            inside_quotes += (line_file[navigator])
-                            navigator += 1
-                        for iterator in inside_quotes:
-                            if(not self.isSymbol(iterator)):
-                                write_file.write('[ERRO] Linha {} | Coluna {} | CTI - Caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
-                                check = False
-                                break
-                        if(check):
-                            write_file.write('{} CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
+                    if(self.isDelimiter(current_index)):
+                        write_file.write('{} DEL {} \n'.format(str(line_index).zfill(2), current_index))
 
-                elif(current_index == string.punctuation[6]):
-                    navigator = index + 1
-                    check = False
-
-                    while(navigator < length_line):
-                        if(line_file[navigator] == string.punctuation[6]):
-                            check = True
-                            break
-                        navigator += 1
-
-                    if((not check) or line_file[index + 1] == '\n'):
-                        write_file.write('[ERRO] Linha {} | Coluna {} | CMF - Caractere mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
+                    elif(current_index == '/' and next_index == '/'):
                         index = length_line
-                    elif(line_file[index + 1] == string.punctuation[6]):
-                        write_file.write('{} CRV {} \n'.format(str(line_index).zfill(2), "''"))
+                    
+                    elif(current_index == '/' and next_index == '*'):
+                        check = True
+                        first_line = line_index
+                        while(check and not(current_index == '*' and next_index == '/')):
+                            if((index +2 ) < length_line):
+                                index += 1
+                                current_index = line_file[index] 
+                                next_index = line_file[index+1]
+                            else:
+                                line_file = read_file.readline()
+                                length_line = len(line_file)
+                                line_index += 1
+                                index = - 1
+                                if(not line_file):
+                                    errors += ('[ERRO] Linha {} | Coluna {} | CoMF - Comentario mal formado\n'.format(first_line, str(index + 1).zfill(2)))
+                                    check = False
+
+                    elif(current_index == string.punctuation[1]):
                         index += 1
-                    elif((line_file[index + 1] == string.punctuation[6]) and (line_file[index + 2] == string.punctuation[6])):
-                        write_file.write('[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
-                        index += 2
-                    elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
-                        write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
-                        index += 2
-                    else:
-                        write_file.write('[ERRO] Linha {} | Coluna {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
-                        navigator = index + 1
+                        check = False
+                        index_last_quotes = 0
+                        navigator = index
+                        
                         while(navigator < length_line):
-                            if(string.punctuation[6] == line_file[navigator]):
-                                index = navigator + 1
+                            index_last_quotes += 1
+                            if(line_file[navigator] == string.punctuation[1]):
+                                check = True
                                 break
                             navigator += 1
-                
-                elif(self.isLetter(current_index)):
-                    check = False
-                    current_character = current_index
-                    index += 1
-
-                    while(index < length_line):
-                        next_index = None
-                        current_index = line_file[index]
-                        
-                        if(index + 1 < length_line):
-                            next_index = line_file[index + 1]
-                        
-                        if(self.isLetter(current_index) or self.isDigit(current_index) or current_index == "_"):
-                            current_character += current_index
-                        elif(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r'):
+                                
+                        if(not check):
+                            errors += '[ERRO] Linha {} | Coluna {} | CMF - Cadeia de caracteres mal formada\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             index -= 1
-                            break
-                        elif(next_index != None and self.isOperator(current_index + next_index)) or self.isOperator(current_index):
-                            index -=1
-                            break
-                        elif current_index != '\n':
-                            write_file.write('[ERRO] Linha {} | Coluna {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
-                            check = True
-                            break
+                        else:
+                            index_last_quotes += index
+                            inside_quotes = ''''''
+                            navigator = index
+                            index = index_last_quotes
+                            while(navigator < index_last_quotes - 1):
+                                inside_quotes += (line_file[navigator])
+                                navigator += 1
+                            for iterator in inside_quotes:
+                                if(not self.isSymbol(iterator)):
+                                    errors += '[ERRO] Linha {} | Coluna {} | CTI - Caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                    check = False
+                                    break
+                            if(check):
+                                write_file.write('{} CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
 
-                        index += 1
-                    
-                    if(check):
-                        while((index + 1) < length_line):
+                    elif(current_index == string.punctuation[6]):
+                        navigator = index + 1
+                        check = False
+
+                        while(navigator < length_line):
+                            if(line_file[navigator] == string.punctuation[6]):
+                                check = True
+                                break
+                            navigator += 1
+
+                        if((not check) or line_file[index + 1] == '\n'):
+                            errors += '[ERRO] Linha {} | Coluna {} | CrMF - Caractere mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            index = length_line
+                        elif(line_file[index + 1] == string.punctuation[6]):
+                            write_file.write('{} CRV {} \n'.format(str(line_index).zfill(2), "''"))
                             index += 1
+                        elif((line_file[index + 1] == string.punctuation[6]) and (line_file[index + 2] == string.punctuation[6])):
+                            errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            index += 2
+                        elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
+                            write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
+                            index += 2
+                        else:
+                            errors += '[ERRO] Linha {} | Coluna {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            navigator = index + 1
+                            while(navigator < length_line):
+                                if(string.punctuation[6] == line_file[navigator]):
+                                    index = navigator + 1
+                                    break
+                                navigator += 1
+                    
+                    elif(self.isLetter(current_index)):
+                        check = False
+                        current_character = current_index
+                        index += 1
+
+                        while(index < length_line):
+                            next_index = None
                             current_index = line_file[index]
-                            if(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r' or current_index == '/'):
+                            
+                            if(index + 1 < length_line):
+                                next_index = line_file[index]
+                            
+                            if(self.isLetter(current_index) or self.isDigit(current_index) or current_index == "_"):
+                                current_character += current_index
+                            elif(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r'):
                                 index -= 1
                                 break
-                    else:
-                        write_file.write('{} PRE {} \n'.format(str(line_index).zfill(2), current_character))
+                            elif(next_index != None and self.isOperator(current_index + next_index)) or self.isOperator(current_index):
+                                index -=1
+                                break
+                            elif current_index != '\n':
+                                errors += '[ERRO] Linha {} | Coluna {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                check = True
+                                break
+
+                            index += 1
                         
+                        if(check):
+                            while((index + 1) < length_line):
+                                index += 1
+                                current_index = line_file[index]
+                                if(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r' or current_index == '/'):
+                                    index -= 1
+                                    break
+                        else:
+                            if(self.isReserved(current_character)):
+                                write_file.write('{} PRE {} \n'.format(str(line_index).zfill(2), current_character))
+                            else:
+                                write_file.write('{} IDE {} \n'.format(str(line_index).zfill(2), current_character))
+                            
+                    elif(self.isDigit(current_index)):
+                        current_character = current_index
+                        maybe_signal = ''
 
-                elif(self.isDigit(current_index)):
-                    current_character = current_index
-                    maybe_signal = ''
+                        if(line_file[index - 1] in ['-', '+']):
+                            maybe_signal = line_file[index - 1]
 
-                    if(line_file[index - 1] in ['-', '+']):
-                        maybe_signal = line_file[index - 1]
-                    # elif((line_file[index - 2] in ['-', '+'] and line_file[index - 1] == ' ')):
-                    #     maybe_signal = line_file[index - 2]
-
-                    index += 1
-                    check_index = 0
-                    current_index = next_index
-                    valid = False
-
-                    while (self.isDigit(current_index) and (index + 1 < length_line)):
-                        current_character += current_index
                         index += 1
-                        current_index = line_file[index]
+                        check_index = 0
+                        current_index = next_index
+                        valid = False
 
-                    if(current_index == '.'):
-                        if((index + 1) < length_line):
+                        while (self.isDigit(current_index) and (index + 1 < length_line)):
                             current_character += current_index
                             index += 1
                             current_index = line_file[index]
-                            while(self.isDigit(current_index) and index < length_line - 1):
-                                check_index += 1
+
+                        if(current_index == '.'):
+                            if((index + 1) < length_line):
                                 current_character += current_index
                                 index += 1
                                 current_index = line_file[index]
-                            
-                            if(current_index == '.'):
-                                check_index = 0
-                                while(index < length_line - 1):
+                                while(self.isDigit(current_index) and index < length_line - 1):
+                                    check_index += 1
+                                    current_character += current_index
                                     index += 1
                                     current_index = line_file[index]
-                                    if(self.isDelimiter(current_index) or current_index == string.punctuation[13]):
-                                        index -= 1
-                                        break
-                        else:
-                            valid = False
+                                
+                                if(current_index == '.'):
+                                    check_index = 0
+                                    while(index < length_line - 1):
+                                        index += 1
+                                        current_index = line_file[index]
+                                        if(self.isDelimiter(current_index) or current_index == string.punctuation[13]):
+                                            index -= 1
+                                            break
+                            else:
+                                valid = False
 
-                        if(check_index > 0):
-                            valid = True
-                        else:
-                            valid = False
-                            
-                    else:
-                        valid = True
-                        if(not self.isDigit(current_index)):
+                            if(check_index > 0):
+                                valid = True
+                            else:
+                                valid = False
                             index -= 1
-                            
-                    if(valid):
-                        write_file.write('{} NMR {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
-                    else:
-                        write_file.write('[ERRO] Linha {} | Coluna {} | NMF - Numero mal formado'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))        
+                                
+                        else:
+                            valid = True
+                            if(not self.isDigit(current_index)):
+                                index -= 1
+                                
+                        if(valid):
+                            write_file.write('{} NRO {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
+                        else:
+                            errors += '[ERRO] Linha {} | Coluna {} | NMF - Numero mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))   
 
-                elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
-                    write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
-                    index += 1
-                elif(self.isOperatorArithmetic(current_index)):
-                    write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
+                    elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
+                        write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        index += 1
+                    elif(self.isOperatorArithmetic(current_index)):
+                        if((not self.isDigit(next_index)) and current_index in ['-', '+']):
+                            write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
+                    elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
+                        write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        index += 1
+                    elif(self.isOperatorRelational(current_index)):
+                        write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
 
-                elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
-                    write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
-                    index += 1
-                elif(self.isOperatorRelational(current_index)):
-                    write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
+                    elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
+                        write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        index += 1
+                    elif(self.isOperatorLogical(current_index)):
+                        write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
+                    
+                    elif current_index != '\n' and current_index != ' ' and current_index != '\t' and current_index != '\r':
+                        errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
 
-                elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
-                    write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                     index += 1
-                elif(self.isOperatorLogical(current_index)):
-                    write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
                 
-                elif current_index != '\n' and current_index != ' ' and current_index != '\t' and current_index != '\r':
-                    write_file.write('[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2)))
+                line_file = read_file.readline()
+                line_index += 1
 
-                index += 1
-            
-            line_file = read_file.readline()
-            line_index += 1
-
-        
-        read_file.close()
-        write_file.close()
+            read_file.close()
+            write_file.write(errors)
+            write_file.close()
         return
 
 if __name__ == '__main__':
