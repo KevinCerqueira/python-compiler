@@ -180,7 +180,7 @@ class LexicalAnalyzer():
                     if((index + 1) < length_line):
                         next_index = line_file[index+1]
 
-                    # Verifica se o caracter é um delimitador
+                    # Verifica se o caracter é um delimitador e escreve no arquivo de saída respectivo
                     if(self.isDelimiter(current_index)):
                         write_file.write('{} DEL {} \n'.format(str(line_index).zfill(2), current_index))
 
@@ -279,22 +279,24 @@ class LexicalAnalyzer():
                         elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
                             write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
                             index += 2
-                        # Verificando Erros Lexicos - Tamanho do caractere invalido
+                        # Verificando Erros Lexicos para Tamanho do caractere invalido
                         else:
                             errors += '[ERRO] Linha {} | Coluna {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             navigator = index + 1
+                            
                             while(navigator < length_line):
                                 if(string.punctuation[6] == line_file[navigator]):
                                     index = navigator + 1
                                     break
                                 navigator += 1
                     
-                    #Verifica se o caracter é uma letra
+                    # Verifica se o caracter é uma letra
                     elif(self.isLetter(current_index)):
                         check = False
                         current_character = current_index
                         index += 1
 
+                        # Percorre as linhas do arquivo
                         while(index < length_line):
                             next_index = None
                             current_index = line_file[index]
@@ -302,18 +304,19 @@ class LexicalAnalyzer():
                             if(index + 1 < length_line):
                                 next_index = line_file[index]
 
-                            # Verifica Se o caracter seguinte é um digito                             
+                            # Verifica Se o caracter atual é uma letra e se o caracter seguinte é um digito ou um traço                              
                             if(self.isLetter(current_index) or self.isDigit(current_index) or current_index == "_"):
                                 current_character += current_index
-                            # Verifica Se o caracter seguinte é um delimitador    
+                            # Verifica Se o caracter atual é um delimitador    
                             elif(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r'):
                                 index -= 1
                                 break
-                            # Verifica Se o caracter seguinte é um operador
+                            # Verifica Se o caracter atual e seguinte é um operador
+                            # Caso o próximo lexema não seja vazio
                             elif(next_index != None and self.isOperator(current_index + next_index)) or self.isOperator(current_index):
                                 index -=1
                                 break
-                              # Verificando Erros Lexicos - Identificador Invalido
+                              # Verificando Erros Lexicos para Identificador Invalido
                             elif current_index != '\n':
                                 errors += '[ERRO] Linha {} | Coluna {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                                 check = True
@@ -351,7 +354,7 @@ class LexicalAnalyzer():
                         current_index = next_index
                         valid = False
 
-                        
+                        # Laço que percorre linha desde que o lexema atual seja um digito e o segunte exista
                         while (self.isDigit(current_index) and (index + 1 < length_line)):
                             current_character += current_index
                             index += 1
@@ -392,33 +395,39 @@ class LexicalAnalyzer():
                             if(not self.isDigit(current_index)):
                                 index -= 1
 
-                          # Verificando Erros Lexicos - numero mal formado        
+                        # Verificando Erros Lexicos para número mal formado        
                         if(valid):
                             write_file.write('{} NRO {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
                         else:
                             errors += '[ERRO] Linha {} | Coluna {} | NMF - Numero mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))   
 
-                    # Verificando a categoria do operador
+                    # Escrevendo no arquivo de saída que o caractere é um operador aritmetico
+                    # Caso o próximo lexema não seja vazio
                     elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
                         write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
-                    # Aritmetico
+                    # Escrevendo no arquivo de saída que o caractere é um operador aritmetico
+                    # Além de fazer a verificação se o próximo lexema é um digito que venha acompanhado pelo sinal de - ou +
                     elif(self.isOperatorArithmetic(current_index)):
                         if((not self.isDigit(next_index)) and current_index in ['-', '+']):
                             write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Relacional
+                    # Escrevendo no arquivo de saída que o caractere é um operador relacional
+                    # Caso o próximo lexema não seja vazio
                     elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
                         write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
+                    # Escrevendo no arquivo de saída que o caractere é um operador relacional
                     elif(self.isOperatorRelational(current_index)):
                         write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Lógico
+                    # Escrevendo no arquivo de saída que o caractere é um operador lógico
+                    # Caso o próximo lexema não seja vazio
                     elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
                         write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
+                    # Escrevendo no arquivo de saída que o caractere é um operador lógico
                     elif(self.isOperatorLogical(current_index)):
                         write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Verificando Erros Lexicos -Simbolo invalido        
+                    # Verificando Erros Lexicos  para Simbolo invalido        
                     elif current_index != '\n' and current_index != ' ' and current_index != '\t' and current_index != '\r':
                         errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
 
