@@ -49,7 +49,7 @@ import os
 '''
 
 class LexicalAnalyzer():
-#Conjunto de tokens do analisador lexico
+    #Conjunto de tokens do analisador lexico
     reservedWords = ['var', 'const', 'typedef', 'struct', 'extends', 'procedure', 'function', 'start', 'return', 'if', 'else', 'then', 'while', 'read', 'print', 'int', 'real', 'boolean', 'string', 'true', 'false', 'global', 'local']
     symbols = ''' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHJKLMNOPQRSTUVXWYZ[\]^_`abcdefghijklmnopqrstuvxwyz{|}~'''
     letters = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","W","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z"]
@@ -59,66 +59,66 @@ class LexicalAnalyzer():
     digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
     delimiters = [';', ',', '(',')', '{', '}', '[', ']']
 
-    # Diretório de entrada
+    # Diretório dos arquivos de entrada.
     dir_input = '\\input\\'
-    # Diretório de saida
+    # Diretório dos arquivos de saída.
     dir_output = '\\output\\'
 
-# Método que Verifica se é uma palavra reservada
+    # Verifica se o parâmetro index é uma palavra reservada.
     def isReserved(self, index):
         if index in self.reservedWords:
             return True
         return False
 
-# Método que Verifica se é um símbolo
+    # Verifica se o parâmetro index é um símbolo.
     def isSymbol(self, index):
         if index in self.symbols:
             return True
         return False
 
-# Método que Verifica se é uma letra
+    # Verifica se o parâmetro index é uma letra.
     def isLetter(self, index):
         if index in self.letters:
             return True
         return False
 
-# Método que Verifica se é um operador aritmetico
+    # Verifica se o parâmetro index é um operador aritmetico.
     def isOperatorArithmetic(self, index):
         if index in self.operatorsArithmetic:
             return True
         return False
     
-# Método que Verifica se é um operador relacional
+    # Verifica se o parâmetro index é um operador relacional.
     def isOperatorRelational(self, index):
         if index in self.operatorsRelational:
             return True
         return False
 
-# Método queVerifica se é um operador logico
+    # Verifica se o parâmetro index é um operador lógico.
     def isOperatorLogical(self, index):
         if index in self.operatorsLogical:
             return True
         return False
 
-# Método que Verifica se é um operador 
+    # Verifica se o parâmetro index é algum operador.
     def isOperator(self, index):
         if (index in self.operatorsArithmetic) or (index in self.operatorsRelational) or (index in self.operatorsLogical):
             return True
         return False
 
-#Método que Verifica se é um digito
+    # Verifica se o parâmetro index é um digito.
     def isDigit(self, index):
         if index in self.digits:
             return True
         return False
 
-#Método que Verifica se é um delimitador
+    # Verifica se o parâmetro index é um delimitador.
     def isDelimiter(self, index):
         if index in self.delimiters:
             return True
         return False
 
-#Leitura e escrita do arquivo
+    #Leitura e escrita do arquivo de entradaX.txt e de saídaX.txt
     def openFiles(self, file_input):
         try:
             read_file = open(os.getcwd() + self.dir_input + file_input, 'r')
@@ -129,7 +129,9 @@ class LexicalAnalyzer():
             write_file.write('[ERRO] Não foi possível ler o arquivo de entrada!')
             sys.exit()
 
-# Metodo que encontra os arquivos no diretorio raiz
+    # Verifica se as pastas e arquivos de entrada e saída existem, caso os 
+    # arquivos de sáida exitam, é retornado todos aqueles que estão na pasta,
+    # caso não existam, retorna um aviso.
     def openPrograms(self):
         if(not (os.path.isdir(os.getcwd() + self.dir_input))):
             print('[ERRO] Não foi possível encontrar o diretório de entrada!')
@@ -148,10 +150,12 @@ class LexicalAnalyzer():
             sys.exit()
         return files_programs
 
- # Metodo que executa o analisador léxico
+    # Método que inicia o analisador léxico.
     def start(self):
         files_programs = self.openPrograms()
         
+        # Laço de repetição que percorre todos os arquivos encontrados na 
+        # pasta de entrada (entradaX.txt).
         for file_program in files_programs:
             read_file = self.openFiles(file_program)[0]
             write_file = self.openFiles(file_program)[1]
@@ -161,16 +165,18 @@ class LexicalAnalyzer():
             line_file = read_file.readline()
             line_index = 1
 
-            # while que lê o arquivo inteiro
+            # Laço de repetição que percorre todas as linhas do arquivo de entrada.
             while(line_file):
                 index = 0
                 length_line = len(line_file)
                 
-                # while que lê linha por linha
+                # Laço de repetição que percorre todos os índices da linha.
                 while(index < length_line):
                     current_index = line_file[index]
                     next_index = None
 
+                    # Caso ainda haja um próximo indíce a ser lido, ele é lido e
+                    # atribuído a variável next_index.  
                     if((index + 1) < length_line):
                         next_index = line_file[index+1]
 
@@ -184,12 +190,13 @@ class LexicalAnalyzer():
 
                     # Verifica se é um comentário em bloco
                     elif(current_index == '/' and next_index == '*'):
-                        check = True # Variavel que impedirá o loop a seguir de continuar caso
-                                     # seja falsa, isso acontece com erro fim inesperado de arquivo
+                        check = True # Variavel responsável por controlar se o comentário de bloco
+                                     # foi fechado adequadamente.
 
                         first_line = line_index
 
-                        # Verifica se é o comentário em bloco é fechado corretamente
+                        # Percorre o restante da linha e das próximas linhas atrás do */ que fecha
+                        # o comentário de bloco, caso não encontre é lançado um erro.
                         while(check and not(current_index == '*' and next_index == '/')):
                             if((index +2 ) < length_line):
                                 index += 1
@@ -204,13 +211,14 @@ class LexicalAnalyzer():
                                     errors += ('[ERRO] Linha {} | Coluna {} | CoMF - Comentario mal formado\n'.format(first_line, str(index + 1).zfill(2)))
                                     check = False
 
-                    # Verifica se o caracter é uma aspa dupla
+                    # Verifica se o caracter é uma aspas duplas
                     elif(current_index == string.punctuation[1]):
                         index += 1
                         check = False  # Variavel de controle
                         index_last_quotes = 0
                         navigator = index
                         
+                        # Percorre o restante da linha atrás da próxima aspas duplas
                         while(navigator < length_line):
                             index_last_quotes += 1
                             if(line_file[navigator] == string.punctuation[1]):
@@ -222,6 +230,9 @@ class LexicalAnalyzer():
                         if(not check):
                             errors += '[ERRO] Linha {} | Coluna {} | CMF - Cadeia de caracteres mal formada\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             index -= 1
+                        # Caso esteja tudo ok, é verificado dentro da aspas duplas
+                        # caso encontre algum simbolo inválido é lançado um erro
+                        # caso não, é mostrado a cadeia contida nas aspas duplas
                         else:
                             index_last_quotes += index
                             inside_quotes = ''''''
@@ -243,25 +254,28 @@ class LexicalAnalyzer():
                         navigator = index + 1
                         check = False
 
+                        # Percorre o restante da linha atrás da próxima aspas simples
                         while(navigator < length_line):
                             if(line_file[navigator] == string.punctuation[6]):
                                 check = True
                                 break
                             navigator += 1
 
-                        # Verificando Erros Lexicos - Caracter mal formado
+                        # Caso as aspas simples não tenham sido fechada corretamente
+                        # ou caso o indíce contido dentro das aspas simples seja um \n
                         if((not check) or line_file[index + 1] == '\n'):
                             errors += '[ERRO] Linha {} | Coluna {} | CrMF - Caractere mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             index = length_line
                         # Escrevendo Caracter Reservado valido no arquivo
+                        # Nesse caso foi apenas a abertura e fechamento das aspas simples
                         elif(line_file[index + 1] == string.punctuation[6]):
                             write_file.write('{} CRV {} \n'.format(str(line_index).zfill(2), "''"))
                             index += 1
-                        # Verificando Erros Lexicos - Simbolo Invalido
+                        # Caso o indíce contido dentro das aspas simples seja outra '
                         elif((line_file[index + 1] == string.punctuation[6]) and (line_file[index + 2] == string.punctuation[6])):
                             errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             index += 2
-                        # Escrevendo símbolo no arquivo
+                        # Caso o simbolo contido dentro das aspas simples seja válido
                         elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
                             write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
                             index += 2
