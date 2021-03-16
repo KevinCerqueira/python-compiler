@@ -3,7 +3,7 @@
 # Kevin Cerqueira (@KevinCerqueira)
 # EXA 869 - MI - Processadores de Linguagem de Programacao
 # ==============================================================================
-# Implementacao do analisador lexico de um compilador
+# Implementação do Análisador Léxico de um compilador
 
 # Bibliotecas para entrada e saida de arquivos
 import sys
@@ -249,7 +249,7 @@ class LexicalAnalyzer():
                             if(check):
                                 write_file.write('{} CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
 
-                    #Verifica se o caractere é uma aspa simples
+                    # Verifica se o índíce é uma aspa simples
                     elif(current_index == string.punctuation[6]):
                         navigator = index + 1
                         check = False
@@ -279,11 +279,11 @@ class LexicalAnalyzer():
                         elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
                             write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
                             index += 2
-                        # Verificando Erros Lexicos para Tamanho do caractere invalido
+                        # Caso o tamanho exceda o de 1 da aspas simples
                         else:
                             errors += '[ERRO] Linha {} | Coluna {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                             navigator = index + 1
-                            
+                            # Percorre até o final da cadeia para pular e ir para os próximos índices 
                             while(navigator < length_line):
                                 if(string.punctuation[6] == line_file[navigator]):
                                     index = navigator + 1
@@ -296,18 +296,19 @@ class LexicalAnalyzer():
                         current_character = current_index
                         index += 1
 
-                        # Percorre as linhas do arquivo
+                        # Percorre a linha do arquivo para pegar toda a palavra
                         while(index < length_line):
                             next_index = None
                             current_index = line_file[index]
-                            
+
+                            # Caso haja um próximo índice depois do atual
                             if(index + 1 < length_line):
                                 next_index = line_file[index]
 
-                            # Verifica Se o caracter atual é uma letra e se o caracter seguinte é um digito ou um traço                              
+                            # Verifica se o caracter atual é uma letra e se o caracter seguinte é um digito ou um traço                              
                             if(self.isLetter(current_index) or self.isDigit(current_index) or current_index == "_"):
                                 current_character += current_index
-                            # Verifica Se o caracter atual é um delimitador    
+                            # Verifica se o caracter atual é um delimitador    
                             elif(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r'):
                                 index -= 1
                                 break
@@ -316,7 +317,7 @@ class LexicalAnalyzer():
                             elif(next_index != None and self.isOperator(current_index + next_index)) or self.isOperator(current_index):
                                 index -=1
                                 break
-                              # Verificando Erros Lexicos para Identificador Invalido
+                              # Caso não seja nenhum dos casos acima e for diferente de um saldo de linha, é lançado um erro
                             elif current_index != '\n':
                                 errors += '[ERRO] Linha {} | Coluna {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
                                 check = True
@@ -324,6 +325,7 @@ class LexicalAnalyzer():
 
                             index += 1
                         
+                        # Caso tenha ocorrido o erro acima, o ponteiro irá pular a palavra e seguirá seu fluxo
                         if(check):
                             while((index + 1) < length_line):
                                 index += 1
@@ -332,11 +334,12 @@ class LexicalAnalyzer():
                                 if(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r' or current_index == '/'):
                                     index -= 1
                                     break
+                        # Caso não tenha ocorido nenhum erro
                         else:
-                            # escreve no arquivo se é palavra reservada
+                            # Escreve no arquivo caso a palavra seja reservada
                             if(self.isReserved(current_character)):
                                 write_file.write('{} PRE {} \n'.format(str(line_index).zfill(2), current_character))
-                            # escreve no arquivo se é identificador
+                            # Escreve no arquivo caso seja identificador
                             else:
                                 write_file.write('{} IDE {} \n'.format(str(line_index).zfill(2), current_character))
 
@@ -350,99 +353,102 @@ class LexicalAnalyzer():
                             maybe_signal = line_file[index - 1]
 
                         index += 1
-                        check_index = 0
+                        check_index = 0 # Variável responsável por guarda a quantidade de casas caso o numero seja decimal (float)
                         current_index = next_index
-                        valid = False
+                        valid = False # Variável de controle para verificar se o digito é valido
 
-                        # Laço que percorre linha desde que o lexema atual seja um digito e o segunte exista
+                        # Laço que captura toda a sequencia de digitos
                         while (self.isDigit(current_index) and (index + 1 < length_line)):
                             current_character += current_index
                             index += 1
                             current_index = line_file[index]
 
-                        # Verifica se após o digito tem ponto decimal
+                        # Verifica se após o digito capturado acima, o proximo indice é um ponto decimal
                         if(current_index == '.'):
                             if((index + 1) < length_line):
                                 current_character += current_index
                                 index += 1
                                 current_index = line_file[index]
+                                # Laço que captura toda a outra parte do numero após o ponto
                                 while(self.isDigit(current_index) and index < length_line - 1):
                                     check_index += 1
                                     current_character += current_index
                                     index += 1
                                     current_index = line_file[index]
                                 
-                                # Verifica se o ponto é um delimitador
+                                # Caso não tenha entrado no while acima, é porque não há número após o ponto 
                                 if(current_index == '.'):
                                     check_index = 0
+                                    # Verifica se há um delimitar ou um espaço no restante da linha
                                     while(index < length_line - 1):
                                         index += 1
                                         current_index = line_file[index]
                                         if(self.isDelimiter(current_index) or current_index == string.punctuation[13]):
-                                            index -= 1
+                                            index -= 1 # Caso haja, volta uma casa (índice) da linha
                                             break
+                            # Caso haja um ponto após o número e depois desse ponto a linha acabe
                             else:
                                 valid = False
-
+                            # Caso tenha digito(s) após o ponto
                             if(check_index > 0):
                                 valid = True
+                            # Caso não tenha digito(s) após o ponto
                             else:
                                 valid = False
                             index -= 1
-                        # Validação do dígito       
+                        # Caso o digito não seja decimal (float)     
                         else:
                             valid = True
                             if(not self.isDigit(current_index)):
                                 index -= 1
 
-                        # Verificando Erros Lexicos para número mal formado        
+                        # Caso o digito esteja integro      
                         if(valid):
                             write_file.write('{} NRO {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
+                        # Caso tenha ocorrido alguma inconsistência na sua verificação
                         else:
                             errors += '[ERRO] Linha {} | Coluna {} | NMF - Numero mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))   
 
-                    # Escrevendo no arquivo de saída que o caractere é um operador aritmetico
-                    # Caso o próximo lexema não seja vazio
+                    
+                    # Caso o próximo lexema não seja vazio e seja um operador aritimetico duplo (com dois simbolos operacionais)
                     elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
                         write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
-                    # Escrevendo no arquivo de saída que o caractere é um operador aritmetico
-                    # Além de fazer a verificação se o próximo lexema é um digito que venha acompanhado pelo sinal de - ou +
+                    # Caso seja um operador aritimetico simples (com apenas um simbolo operacional)
                     elif(self.isOperatorArithmetic(current_index)):
+                        # Caso o próximo índice seja um número ele não grava, pois o sinal junto com o simbolo irá passar pelo analisador de digitos
                         if((not self.isDigit(next_index)) and current_index in ['-', '+']):
                             write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Escrevendo no arquivo de saída que o caractere é um operador relacional
-                    # Caso o próximo lexema não seja vazio
+                    # Caso seja um operador relacional duplo
                     elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
                         write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
-                    # Escrevendo no arquivo de saída que o caractere é um operador relacional
+                    # Caso seja um operador relacional simples
                     elif(self.isOperatorRelational(current_index)):
                         write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Escrevendo no arquivo de saída que o caractere é um operador lógico
-                    # Caso o próximo lexema não seja vazio
+                    # Caso seja um operador lógico duplo
                     elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
                         write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
-                    # Escrevendo no arquivo de saída que o caractere é um operador lógico
+                    # Caso seja um operador lógico simples
                     elif(self.isOperatorLogical(current_index)):
                         write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
-                    # Verificando Erros Lexicos  para Simbolo invalido        
+                    # Caso não caia em nenhum dos casos acima e não seja nenhum espaçador ou pulador de linha         
                     elif current_index != '\n' and current_index != ' ' and current_index != '\t' and current_index != '\r':
                         errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
 
                     index += 1
                 
-                #Ler a proxima linha
+                # Lê a próxima linha
                 line_file = read_file.readline()
                 line_index += 1
 
-            #Fechando o arquivo
+            # Fechando os arquivos e escrevendo os erros
             read_file.close()
             write_file.write(errors)
             write_file.close()
         return
-
+# Função main, cria um objeto e inicia o Analisador Léxico
 if __name__ == '__main__':
     analyzer = LexicalAnalyzer()
     analyzer.start()
