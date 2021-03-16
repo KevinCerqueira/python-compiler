@@ -290,13 +290,13 @@ class LexicalAnalyzer():
                                     break
                                 navigator += 1
                     
-                    # Verifica se o caracter é uma letra
+                    # Verifica se o caracter atual é uma letra
                     elif(self.isLetter(current_index)):
                         check = False
                         current_character = current_index
                         index += 1
 
-                        # Percorre as linhas do arquivo
+                        # Percorre os lexemasaté chegar ao final da linha
                         while(index < length_line):
                             next_index = None
                             current_index = line_file[index]
