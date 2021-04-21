@@ -60,9 +60,9 @@ class LexicalAnalyzer():
     delimiters = [';', ',', '(',')', '{', '}', '[', ']']
 
     # Diretório dos arquivos de entrada.
-    dir_input = '\\input\\'
+    dir_input = '\\input_lexical\\'
     # Diretório dos arquivos de saída.
-    dir_output = '\\output\\'
+    dir_output = '\\output_lexical\\'
 
     # Verifica se o parâmetro index é uma palavra reservada.
     def isReserved(self, index):
@@ -126,7 +126,7 @@ class LexicalAnalyzer():
             return [read_file, write_file]
         except:
             write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('entrada', 'saida'), 'w')
-            write_file.write('[ERRO] Não foi possível ler o arquivo de entrada!')
+            write_file.write("[ERRO] Não foi possível ler o arquivo de entrada '{}'.".format(self.dir_input + file_input))
             sys.exit()
 
     # Verifica se as pastas e arquivos de entrada e saída existem, caso os 
@@ -134,7 +134,7 @@ class LexicalAnalyzer():
     # caso não existam, retorna um aviso.
     def openPrograms(self):
         if(not (os.path.isdir(os.getcwd() + self.dir_input))):
-            print('[ERRO] Não foi possível encontrar o diretório de entrada!')
+            print("[ERRO] Não foi possível encontrar o diretório de entrada '{}'.".format(self.dir_input))
             sys.exit()
 
         if(not (os.path.isdir(os.getcwd() + self.dir_output))):
@@ -160,8 +160,6 @@ class LexicalAnalyzer():
             read_file = self.openFiles(file_program)[0]
             write_file = self.openFiles(file_program)[1]
 
-            errors = "\n"
-
             line_file = read_file.readline()
             line_index = 1
 
@@ -182,7 +180,7 @@ class LexicalAnalyzer():
 
                     # Verifica se o caracter é um delimitador e escreve no arquivo de saída respectivo
                     if(self.isDelimiter(current_index)):
-                        write_file.write('{} DEL {} \n'.format(str(line_index).zfill(2), current_index))
+                        write_file.write('{}|DEL {} \n'.format(str(line_index).zfill(2), current_index))
 
                     # Verifica se é um comentário simples
                     elif(current_index == '/' and next_index == '/'):
@@ -208,7 +206,8 @@ class LexicalAnalyzer():
                                 line_index += 1
                                 index = - 1
                                 if(not line_file):
-                                    errors += ('[ERRO] Linha {} | Coluna {} | CoMF - Comentario mal formado\n'.format(first_line, str(index + 1).zfill(2)))
+                                    error = ('{} [ERRO] Coluna: {} | CoMF - Comentario mal formado\n'.format(first_line, str(index + 1).zfill(2)))
+                                    write_file.write(error)
                                     check = False
 
                     # Verifica se o caracter é uma aspas duplas
@@ -228,7 +227,8 @@ class LexicalAnalyzer():
 
                         # Verifica se é a cadeia de caractere é fechado corretamente com aspa dupla        
                         if(not check):
-                            errors += '[ERRO] Linha {} | Coluna {} | CMF - Cadeia de caracteres mal formada\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            error = '{} [ERRO] Coluna: {} | CMF - Cadeia de caracteres mal formada\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            write_file.write(error)
                             index -= 1
                         # Caso esteja tudo ok, é verificado dentro da aspas duplas
                         # caso encontre algum simbolo inválido é lançado um erro
@@ -243,11 +243,12 @@ class LexicalAnalyzer():
                                 navigator += 1
                             for iterator in inside_quotes:
                                 if(not self.isSymbol(iterator)):
-                                    errors += '[ERRO] Linha {} | Coluna {} | CTI - Caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                    error = '{} [ERRO] Coluna: {} | CTI - Caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                    write_file.write(error)
                                     check = False
                                     break
                             if(check):
-                                write_file.write('{} CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
+                                write_file.write('{}|CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
 
                     # Verifica se o índíce é uma aspa simples
                     elif(current_index == string.punctuation[6]):
@@ -264,24 +265,27 @@ class LexicalAnalyzer():
                         # Caso as aspas simples não tenham sido fechada corretamente
                         # ou caso o indíce contido dentro das aspas simples seja um \n
                         if((not check) or line_file[index + 1] == '\n'):
-                            errors += '[ERRO] Linha {} | Coluna {} | CrMF - Caractere mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            error = '{} [ERRO] Coluna: {} | CrMF - Caractere mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            write_file.write(error)
                             index = length_line
                         # Escrevendo Caracter Reservado valido no arquivo
                         # Nesse caso foi apenas a abertura e fechamento das aspas simples
                         elif(line_file[index + 1] == string.punctuation[6]):
-                            write_file.write('{} CRV {} \n'.format(str(line_index).zfill(2), "''"))
+                            write_file.write('{}|CRV {} \n'.format(str(line_index).zfill(2), "''"))
                             index += 1
                         # Caso o indíce contido dentro das aspas simples seja outra '
                         elif((line_file[index + 1] == string.punctuation[6]) and (line_file[index + 2] == string.punctuation[6])):
-                            errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            error = '{} [ERRO] Coluna: {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            write_file.write(error)
                             index += 2
                         # Caso o simbolo contido dentro das aspas simples seja válido
                         elif(self.isSymbol(line_file[index + 1]) and line_file[index + 2] == string.punctuation[6]):
-                            write_file.write('{} SIM {} \n'.format(str(line_index).zfill(2), next_index))
+                            write_file.write('{}|SIM {} \n'.format(str(line_index).zfill(2), next_index))
                             index += 2
                         # Caso o tamanho exceda o de 1 da aspas simples
                         else:
-                            errors += '[ERRO] Linha {} | Coluna {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            error = '{} [ERRO] Coluna: {} | TCI - Tamanho do caractere invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                            write_file.write(error)
                             navigator = index + 1
                             # Percorre até o final da cadeia para pular e ir para os próximos índices 
                             while(navigator < length_line):
@@ -319,7 +323,8 @@ class LexicalAnalyzer():
                                 break
                               # Caso não seja nenhum dos casos acima e for diferente de um saldo de linha, é lançado um erro
                             elif current_index != '\n':
-                                errors += '[ERRO] Linha {} | Coluna {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                error = '{} [ERRO] Coluna: {} | IDI - Identificador invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                                write_file.write(error)
                                 check = True
                                 break
 
@@ -338,10 +343,10 @@ class LexicalAnalyzer():
                         else:
                             # Escreve no arquivo caso a palavra seja reservada
                             if(self.isReserved(current_character)):
-                                write_file.write('{} PRE {} \n'.format(str(line_index).zfill(2), current_character))
+                                write_file.write('{}|PRE {} \n'.format(str(line_index).zfill(2), current_character))
                             # Escreve no arquivo caso seja identificador
                             else:
-                                write_file.write('{} IDE {} \n'.format(str(line_index).zfill(2), current_character))
+                                write_file.write('{}|IDE {} \n'.format(str(line_index).zfill(2), current_character))
 
                     # Verifica se é um digito        
                     elif(self.isDigit(current_index)):
@@ -404,39 +409,41 @@ class LexicalAnalyzer():
 
                         # Caso o digito esteja integro      
                         if(valid):
-                            write_file.write('{} NRO {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
+                            write_file.write('{}|NRO {} \n'.format(str(line_index).zfill(2), maybe_signal + current_character))
                         # Caso tenha ocorrido alguma inconsistência na sua verificação
                         else:
-                            errors += '[ERRO] Linha {} | Coluna {} | NMF - Numero mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))   
+                            error = '{} [ERRO] Coluna: {} | NMF - Numero mal formado\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))   
+                            write_file.write(error)
 
                     
                     # Caso o próximo lexema não seja vazio e seja um operador aritimetico duplo (com dois simbolos operacionais)
                     elif(next_index != None and self.isOperatorArithmetic(current_index + next_index)):
-                        write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        write_file.write('{}|ART {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
                     # Caso seja um operador aritimetico simples (com apenas um simbolo operacional)
                     elif(self.isOperatorArithmetic(current_index)):
                         # Caso o próximo índice seja um número ele não grava, pois o sinal junto com o simbolo irá passar pelo analisador de digitos
                         if((not self.isDigit(next_index)) and current_index in ['-', '+']):
-                            write_file.write('{} ART {} \n'.format(str(line_index).zfill(2), current_index))
+                            write_file.write('{}|ART {} \n'.format(str(line_index).zfill(2), current_index))
                     # Caso seja um operador relacional duplo
                     elif(next_index != None and self.isOperatorRelational(current_index + next_index)):
-                        write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        write_file.write('{}|REL {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
                     # Caso seja um operador relacional simples
                     elif(self.isOperatorRelational(current_index)):
-                        write_file.write('{} REL {} \n'.format(str(line_index).zfill(2), current_index))
+                        write_file.write('{}|REL {} \n'.format(str(line_index).zfill(2), current_index))
                     # Caso seja um operador lógico duplo
                     elif(next_index != None and self.isOperatorLogical(current_index + next_index)):
-                        write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
+                        write_file.write('{}|LOG {} \n'.format(str(line_index).zfill(2), current_index + next_index))
                         index += 1
                     # Caso seja um operador lógico simples
                     elif(self.isOperatorLogical(current_index)):
-                        write_file.write('{} LOG {} \n'.format(str(line_index).zfill(2), current_index))
+                        write_file.write('{}|LOG {} \n'.format(str(line_index).zfill(2), current_index))
                     # Caso não caia em nenhum dos casos acima e não seja nenhum espaçador ou pulador de linha         
                     elif current_index != '\n' and current_index != ' ' and current_index != '\t' and current_index != '\r':
-                        errors += '[ERRO] Linha {} | Coluna {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
-
+                        error = '{} [ERRO] Coluna: {} | SIB - Simbolo invalido\n'.format(str(line_index).zfill(2), str(index + 1).zfill(2))
+                        write_file.write(error)
+    
                     index += 1
                 
                 # Lê a próxima linha
@@ -445,7 +452,6 @@ class LexicalAnalyzer():
 
             # Fechando os arquivos e escrevendo os erros
             read_file.close()
-            write_file.write(errors)
             write_file.close()
         return
 # Função main, cria um objeto e inicia o Analisador Léxico
