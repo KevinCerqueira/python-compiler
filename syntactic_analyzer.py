@@ -95,7 +95,7 @@ class SyntacticAnalyzer():
     def nextIndex(self):
         if("[ERRO]" in self.identifiers_file[self.line_file]):
             self.line_index += 1
-            # PAROU NO DECLS, TEM QUE FAZER O DECLS
+            
     # <Program> ::= <Global Decl><Decls><Start>
     def Program(self):
         self.nextIndex()
@@ -203,7 +203,136 @@ class SyntacticAnalyzer():
     # <Dimensao_matrix2> ::= ',' '{'<Value_assigned_matrix> '}' '}'
     def DimensaoMatrix2(self):
         self.nextIndex()
+
+    # <Decls> ::= <Decl> <Decls> |
+    def Decls(self):
+        self.nextIndex()
+
+    #FAZER STRUCT DECL
+    # <Decl>  ::= <Function Declaration>| <Proc Decl> | <Struct Decl> | <Typedef Decl>
+    def Decl(self):
+        self.nextIndex()
+
+    # <Function Declaration> ::= 'function' <Type> Identifier '(' <Params> ')' '{' <Body> '}'
+    def FunctionDeclaration(self):
+        self.nextIndex()
     
-            
+    # <Params>     ::= <Param> ',' <Params>| <Param> | 
+    def Params(self):
+        self.nextIndex()
+
+    # <Param>      ::= const <Type> Identifier  |  <Type> Identifier
+    def Param(self):
+        self.nextIndex()
     
+    # <Proc Decl> ::= 'procedure' Identifier '(' <Params> ')' '{' <Body Procedure> '}'  | Identifier '(' <Formal Parameter List> ')' '{' <Body Procedure> '}'
+     def ProcDecl(self):
+        self.nextIndex()
+
+    # <Body Procedure>  ::=  <Body Item Procedure><Body Procedure>   |  
+    def BodyProcedure(self):
+        self.nextIndex()
+
+    # <Body Item Procedure>  ::=  <Var Decl> | <While Procedure> | <If Procedure> | <Read> | <Print> | <Assign>
+    def BodyItemProcedure(self):
+        self.nextIndex()
+
+    # <While Procedure> ::= 'while' '(' <Conditional Expression> ')' '{' <Body Procedure> '}'
+    def WhileProcedure(self):
+        self.nextIndex()
+        
+    # <Conditional Expression> ::= <Boolean Literal>  | <Relational Expression>  | <Logical Expression>
+    def ConditionalExpression(self):
+        self.nextIndex()
+
+    # <Boolean Literal> ::= 'true'  | 'false'
+    def BooleanLiteral(self):
+        self.nextIndex()
+
+    # <Relational Expression>  ::= <Exp> <Relational> 
+    def RelationalExpression(self):
+        self.nextIndex()
+
+    # <Exp> ::= <PrefixGlobalLocal> <Term> <Add Exp> | <Term> <Add Exp>
+    def Exp(self):
+        self.nextIndex()
+
+    # <PrefixGlobalLocal> ::= 'global.' | 'local.'
+    def PrefixGlobalLocal(self):
+        self.nextIndex()
+
+    # <Term> ::= <Expression Value> <Mult Exp>
+    def Term(self):
+        self.nextIndex()
+
+    # <Expression Value>  ::= '-' <Expression Value>   |  Identifier | '(' <Exp> ')' | <Number>    | <Boolean Literal>  | StringLiteral  | <Function Call>
+    def ExpressionValue(self):
+        self.nextIndex()
+    
+    # <Function Call> ::= Identifier '(' <Formal Parameter List> ')'
+    def FunctionCall(self):
+        self.nextIndex()
+
+    # <Formal Parameter List> ::= <Exp>   | <Exp> ',' <Formal Parameter List>    |
+    def FormalParameterList(self):
+        self.nextIndex()
+
+    # <Mult Exp>    ::= '*' <Term>   |  '/' <Term>    |
+    def MultExp(self):
+        self.nextIndex()
+
+    # <Add Exp>     ::=  '+'  <Exp>   |   '-'  <Exp>     | 
+    def AddExp(self):
+        self.nextIndex()
+
+    # <Relational> ::= '>'  <Exp>    |  '<'  <Exp>   |  '<=' <Exp>   |  '>=' <Exp>  |  '==' <Exp>    !Equal  |  '!=' <Exp>    !Not equal
+    def Relational(self):
+        self.nextIndex()
          
+    # <Logical Expression> ::= <Expression Value Logical> <Logical> | <Logical Denied> 
+    def LogicalExpression(self):
+        self.nextIndex()
+
+    # <Expression Value Logical>  ::= Identifier    | <Boolean Literal>   | StringLiteral  | <Function Call>  | <Relational Expression>
+    def ExpressionValueLogical(self):
+        self.nextIndex()
+
+    # <Logical> ::= <Conditional Operator> <Expression Value Logical> | <Conditional Operator> <Logical Denied>
+    def Logical(self):
+        self.nextIndex()
+
+    # <Conditional Operator>  ::= '&&'  | '||' 
+    def ConditionalOperator(self):
+        self.nextIndex()
+
+    # <Logical Denied> ::= '!' Identifier   | '!' <Boolean Literal  | '!' <Logical Expression>  | '!' <Relational Expression>
+    def LogicalDenied(self):
+        self.nextIndex()
+
+    # <If Procedure> ::= 'if' '(' <Conditional Expression><Then Procedure> 
+    def IfProcedure(self):
+        self.nextIndex()
+    
+    # <Then Procedure> ::= ')' 'then' '{'<Body Procedure>'}' <Else Procedure>
+    def ThenProcedure(self):
+        self.nextIndex()
+
+    # <Else Procedure> ::= 'else' '{' <Body Procedure> '}' | 
+    def ElseProcedure(self):
+        self.nextIndex()
+
+    # <Read>  ::= read'(' <Formal Parameter List Read> ')' ';'
+    def Read(self):
+        self.nextIndex()
+
+    # <Formal Parameter List> ::= <Exp>  | <Exp> ',' <Formal Parameter List>  |
+    def FormalParameterList(self):
+        self.nextIndex()
+
+    # <Print> ::= print'(' <Formal Parameter List>  ')' ';'
+    def Print(self):
+        self.nextIndex()
+
+    # <Assign> ::= <PrefixGlobalLocal> Identifier '=' <Exp> ';'  | Identifier '=' <Exp> ';'  | Identifier <Vector><Assignment_vector> ';' | Identifier <Matrix><Assignment_matrix> ';' | <Exp> ';' 
+    def Assign(self):
+        self.nextIndex()
