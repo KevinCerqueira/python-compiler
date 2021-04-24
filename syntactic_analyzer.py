@@ -208,7 +208,6 @@ class SyntacticAnalyzer():
     def Decls(self):
         self.nextIndex()
 
-    #FAZER STRUCT DECL
     # <Decl>  ::= <Function Declaration>| <Proc Decl> | <Struct Decl> | <Typedef Decl>
     def Decl(self):
         self.nextIndex()
@@ -224,9 +223,37 @@ class SyntacticAnalyzer():
     # <Param>      ::= const <Type> Identifier  |  <Type> Identifier
     def Param(self):
         self.nextIndex()
+
+    # <Body>        ::=  <Body Item><Body>
+    def Body(self):
+        self.nextIndex()
+
+    # <Body Item>  ::=  <Var Decl> | <While> | <If> | <Read> | <Print> | <Assign> | <Return Statement>
+    def BodyItem(self):
+        self.nextIndex()
+
+    # <While> ::= 'while' '(' <Conditional Expression> ')' '{' <Body> '}'
+    def While(self):
+        self.nextIndex()
+
+    # <If> ::= 'if' '(' <Conditional Expression><Then> 
+    def If(self):
+        self.nextIndex()
+
+    # <Then> ::= ')' 'then' '{'<Body>'}' <Else>
+    def Then(self):
+        self.nextIndex()
+
+    # <Else> ::= 'else' '{' <Body> '}' | 
+    def Else(self):
+        self.nextIndex()
+    
+    # <Return Statement> ::= 'return' ';' | 'return' <Assign> 
+    def ReturnStatement(self):
+        self.nextIndex()
     
     # <Proc Decl> ::= 'procedure' Identifier '(' <Params> ')' '{' <Body Procedure> '}'  | Identifier '(' <Formal Parameter List> ')' '{' <Body Procedure> '}'
-     def ProcDecl(self):
+    def ProcDecl(self):
         self.nextIndex()
 
     # <Body Procedure>  ::=  <Body Item Procedure><Body Procedure>   |  
@@ -273,7 +300,7 @@ class SyntacticAnalyzer():
     def FunctionCall(self):
         self.nextIndex()
 
-    # <Formal Parameter List> ::= <Exp>   | <Exp> ',' <Formal Parameter List>    |
+    # <Formal Parameter List> ::= <Exp>  | <Exp> ',' <Formal Parameter List>    |
     def FormalParameterList(self):
         self.nextIndex()
 
@@ -325,14 +352,30 @@ class SyntacticAnalyzer():
     def Read(self):
         self.nextIndex()
 
-    # <Formal Parameter List> ::= <Exp>  | <Exp> ',' <Formal Parameter List>  |
-    def FormalParameterList(self):
-        self.nextIndex()
-
     # <Print> ::= print'(' <Formal Parameter List>  ')' ';'
     def Print(self):
         self.nextIndex()
 
     # <Assign> ::= <PrefixGlobalLocal> Identifier '=' <Exp> ';'  | Identifier '=' <Exp> ';'  | Identifier <Vector><Assignment_vector> ';' | Identifier <Matrix><Assignment_matrix> ';' | <Exp> ';' 
     def Assign(self):
+        self.nextIndex()
+    
+    # <Struct Decl>  ::= struct Identifier <Extends> '{' <VariablesList> '}' 
+    def StructDecl(self):
+        self.nextIndex()
+        
+    # <Extends> ::= 'extends' Identifier | 
+    def Extends(self):
+        self.nextIndex()
+        
+    #  <Typedef Decl> ::= typedef <Base> Identifier ';'
+    def TypedefDecl(self):
+        self.nextIndex()
+        
+    #  <Base> ::= <Type> | struct <Extends> '{' <VariablesList> '}' | <Struct Decl>  
+    def Base(self):
+        self.nextIndex()    
+        
+    # <Start> ::= 'start' '(' ')' '{' <Body Procedure> '}' <Decls> 
+    def Start(self):
         self.nextIndex()
