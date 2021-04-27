@@ -57,30 +57,33 @@ class SyntacticAnalyzer():
     # Linha por completo do arquivo atual
     line_current = ""
     
+    
     # Tabelas da análise sintatica
-    table_register = {}
+    table_struct = {}
     table_const = {}
     table_global = {}
     table_function = {}
-    table_algorithm = {}
+    table_start = {}
     
     def __init__(self):
         # Arquivos do programa
         files_programs = self.openPrograms()
-
+        
         # Laço de repetição que percorre todos os arquivos encontrados na 
         # pasta de saida do analisador lexico (output_lexical/saidaX.txt).
         for file_program in files_programs:
             # Verifica se há algum erro sintático
-            isError = False
-
+            self.hasError = False
+            
             read_file = self.openFiles(file_program)[0]
-            write_file = self.openFiles(file_program)[1]
+            self.write_file = self.openFiles(file_program)[1]
 
             self.identifiers_file = read_file.readlines()
-
+            
             self.line_index = 0
             self.line_current = ""
+            
+            self.start()
     
     # Vai para o próximo identificador/token
     def nextIdentifier(self):
@@ -89,293 +92,197 @@ class SyntacticAnalyzer():
     
     # Pega o conteudo do indentificador/token
     def contentIdentifier(self):
-        return self.identifiers_file[self.line_index][ : self.identifiers_file[self.line_index].find(' ')]
+        return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find('|')+1 : self.identifiers_file[self.line_index].find(' ')]
     
     # Procura por um erro, caso haja vai para a próxima linha
     def nextIndex(self):
-        if("[ERRO]" in self.identifiers_file[self.line_file]):
+        if("[ERRO]" in self.identifiers_file[self.line_index]):
             self.line_index += 1
-            
-    # <Program> ::= <Global Decl><Decls><Start>
+    
+    def exception(self, exception):
+        self.write_file.write("{} ERRO SINTÁTICO - {} [{}]".format(self.line_current, exception, self.identifiers_file[self.line_index]))
+        self.hasError = True
+    
     def Program(self):
         self.nextIndex()
-            
-    # <Global Decl> ::= <Const Decl> | <Var Decl> | <Const Decl><Var Decl>  | <Var Decl><Const Decl> |
-    def GlobalDecl(self):
-        self.nextIndex()
-    
-    # <Const Decl> ::= 'const' '{' <ConstList> '}' 
-    def ConstDecl(self):
-        self.nextIndex()
-    
-    # <ConstList> ::= <Type> <Const> <ConstList> | 
-    def ConstList(self):
-        self.nextIndex()
-    
-    # <Type> ::= int | real | boolean | string | struct Identifier | Identifier
-    def Type(self):
-        self.nextIndex()
-    
-    # <Const> ::= Identifier '=' <Value> <Delimiter Const> 
-    def Const(self):
-        self.nextIndex()
-    
-    # <Value> ::= <Number> | <Boolean Literal> | StringLiteral
-    def Value(self):
-        self.nextIndex()
-    
-    # <Number> ::= DecLiteral | OctLiteral | HexLiteral | FloatLiteral
-    def Number(self):
-        self.nextIndex()
-    
-    # <Boolean Literal> ::= 'true'| 'false'
-    def BooleanLiteral(self):
-        self.nextIndex()
-    
-    # <Delimiter Const> ::= ',' <Const> |';'
-    def DelimiterConst(self):
-        self.nextIndex()
-    
-    # <Var Decl> ::= 'var' '{' <VariablesList> '}'  
-    def VarDecl(self):
-        self.nextIndex()
-    
-    # <VariablesList> ::= <Type> <Variable> <VariablesList> |  
-    def VariablesList(self):
-        self.nextIndex()
-    
-    # <Variable> ::= Identifier<Aux>
-    def Variable(self):
-        self.nextIndex()
-    
-    # <Aux> ::= '=' <Value> <Delimiter Var> | <Delimiter Var>|  <Vector><Assignment_vector><Delimiter Var>  | <Matrix><Assignment_matrix><Delimiter Var>    
-    def Aux(self):
-        self.nextIndex()
-    
-    # <Delimiter Var> ::= ',' <Variable> |';'
-    def DelimiterVar(self):
-        self.nextIndex()
-    
-    # <Vector> ::= '['<Index>']'
-    def Vector(self):
-        self.nextIndex()
-    
-    # <Index> ::= DecLiteral | OctLiteral | Identifier
-    def Index(self):
-        self.nextIndex()
-    
-    # <Assignment_vector> ::= <Assignment_vector_aux1> | <Assignment_vector_aux2> | 
-    def AssignmentVector(self):
-        self.nextIndex()
-    
-    # <Assignment_vector_aux1> ::= '=' <Value>
-    def AssignmentVectorAux1(self):
-        self.nextIndex()
-    
-    # <Assignment_vector_aux2> ::= '=' '{'<Value_assigned_vector>'}'
-    def AssignmentVectorAux2(self):
-        self.nextIndex()
-    
-    # <Value_assigned_vector> ::= <Value> ',' <Value_assigned_vector> | <Value>
-    def ValueAssignedVector(self):
-        self.nextIndex()
-    
-    # <Matrix> ::= '['<Index>']' <Vector>
-    def Matrix(self):
-        self.nextIndex()
-    
-    # <Assignment_matrix> ::= <Assignment_matrix_aux1> | <Assignment_matrix_aux2> |
-    def AssignmentMatrix(self):
-        self.nextIndex()
-    
-    # <Assignment_matrix_aux1> ::=  <Assignment_vector_aux1>
-    def AssignmentMatrixAux1(self):
-        self.nextIndex()
-    
-    # <assignment_matrix_aux2> ::=  '=' '{' '{' <Value_assigned_matrix> '}' <Dimensao_matrix2>
-    def AssignmentMatrixAux2(self):
-        self.nextIndex()
-    
-    # <Value_assigned_matrix> ::= <Value> ',' <Value_assigned_matrix> | <Value> 
-    def ValueAssignedMatrix(self):
-        self.nextIndex()
-    
-    # <Dimensao_matrix2> ::= ',' '{'<Value_assigned_matrix> '}' '}'
-    def DimensaoMatrix2(self):
-        self.nextIndex()
-
-    # <Decls> ::= <Decl> <Decls> |
-    def Decls(self):
-        self.nextIndex()
-
-    # <Decl>  ::= <Function Declaration>| <Proc Decl> | <Struct Decl> | <Typedef Decl>
-    def Decl(self):
-        self.nextIndex()
-
-    # <Function Declaration> ::= 'function' <Type> Identifier '(' <Params> ')' '{' <Body> '}'
-    def FunctionDeclaration(self):
-        self.nextIndex()
-    
-    # <Params>     ::= <Param> ',' <Params>| <Param> | 
-    def Params(self):
-        self.nextIndex()
-
-    # <Param>      ::= const <Type> Identifier  |  <Type> Identifier
-    def Param(self):
-        self.nextIndex()
-
-    # <Body>        ::=  <Body Item><Body>
-    def Body(self):
-        self.nextIndex()
-
-    # <Body Item>  ::=  <Var Decl> | <While> | <If> | <Read> | <Print> | <Assign> | <Return Statement>
-    def BodyItem(self):
-        self.nextIndex()
-
-    # <While> ::= 'while' '(' <Conditional Expression> ')' '{' <Body> '}'
-    def While(self):
-        self.nextIndex()
-
-    # <If> ::= 'if' '(' <Conditional Expression><Then> 
-    def If(self):
-        self.nextIndex()
-
-    # <Then> ::= ')' 'then' '{'<Body>'}' <Else>
-    def Then(self):
-        self.nextIndex()
-
-    # <Else> ::= 'else' '{' <Body> '}' | 
-    def Else(self):
-        self.nextIndex()
-    
-    # <Return Statement> ::= 'return' ';' | 'return' <Assign> 
-    def ReturnStatement(self):
-        self.nextIndex()
-    
-    # <Proc Decl> ::= 'procedure' Identifier '(' <Params> ')' '{' <Body Procedure> '}'  | Identifier '(' <Formal Parameter List> ')' '{' <Body Procedure> '}'
-    def ProcDecl(self):
-        self.nextIndex()
-
-    # <Body Procedure>  ::=  <Body Item Procedure><Body Procedure>   |  
-    def BodyProcedure(self):
-        self.nextIndex()
-
-    # <Body Item Procedure>  ::=  <Var Decl> | <While Procedure> | <If Procedure> | <Read> | <Print> | <Assign>
-    def BodyItemProcedure(self):
-        self.nextIndex()
-
-    # <While Procedure> ::= 'while' '(' <Conditional Expression> ')' '{' <Body Procedure> '}'
-    def WhileProcedure(self):
-        self.nextIndex()
         
-    # <Conditional Expression> ::= <Boolean Literal>  | <Relational Expression>  | <Logical Expression>
-    def ConditionalExpression(self):
-        self.nextIndex()
-
-    # <Boolean Literal> ::= 'true'  | 'false'
-    def BooleanLiteral(self):
-        self.nextIndex()
-
-    # <Relational Expression>  ::= <Exp> <Relational> 
-    def RelationalExpression(self):
-        self.nextIndex()
-
-    # <Exp> ::= <PrefixGlobalLocal> <Term> <Add Exp> | <Term> <Add Exp>
-    def Exp(self):
-        self.nextIndex()
-
-    # <PrefixGlobalLocal> ::= 'global.' | 'local.'
-    def PrefixGlobalLocal(self):
-        self.nextIndex()
-
-    # <Term> ::= <Expression Value> <Mult Exp>
-    def Term(self):
-        self.nextIndex()
-
-    # <Expression Value>  ::= '-' <Expression Value>   |  Identifier | '(' <Exp> ')' | <Number>    | <Boolean Literal>  | StringLiteral  | <Function Call>
-    def ExpressionValue(self):
-        self.nextIndex()
+        self.StructDecl()
+        self.ConstDecl()
+        self.table_global = self.VarDecl()
+        self.table_function = self.FuncDecl()
+        self.start()
+        
+        if(self.hasError):
+            self.write_file.write("ERROS SINTÁTICOS - VERIFIQUE E TENTE NOVAMENTE")
+        else:
+            if('$' in self.identifiers_file[self.line_index]):
+                self.write_file.write("ANÁLISE SINTÁTICA FINALIZADA")
+            else:
+                self.write_file.write("FIM NÃO ENCONTRADO")
+        
+        self.write_file.write('\n')
+        self.write_file.write(self.table_struct)
+        self.write_file.write('\n')
+        self.write_file.write(self.table_const)
+        self.write_file.write('\n')
+        self.write_file.write(self.table_function)
+        self.write_file.write('\n')
+        self.write_file.write(self.table_start)
+        self.write_file.write('\n')
+        
+        self.write_file.close()
     
-    # <Function Call> ::= Identifier '(' <Formal Parameter List> ')'
-    def FunctionCall(self):
-        self.nextIndex()
-
-    # <Formal Parameter List> ::= <Exp>  | <Exp> ',' <Formal Parameter List>    |
-    def FormalParameterList(self):
-        self.nextIndex()
-
-    # <Mult Exp>    ::= '*' <Term>   |  '/' <Term>    |
-    def MultExp(self):
-        self.nextIndex()
-
-    # <Add Exp>     ::=  '+'  <Exp>   |   '-'  <Exp>     | 
-    def AddExp(self):
-        self.nextIndex()
-
-    # <Relational> ::= '>'  <Exp>    |  '<'  <Exp>   |  '<=' <Exp>   |  '>=' <Exp>  |  '==' <Exp>    !Equal  |  '!=' <Exp>    !Not equal
-    def Relational(self):
-        self.nextIndex()
-         
-    # <Logical Expression> ::= <Expression Value Logical> <Logical> | <Logical Denied> 
-    def LogicalExpression(self):
-        self.nextIndex()
-
-    # <Expression Value Logical>  ::= Identifier    | <Boolean Literal>   | StringLiteral  | <Function Call>  | <Relational Expression>
-    def ExpressionValueLogical(self):
-        self.nextIndex()
-
-    # <Logical> ::= <Conditional Operator> <Expression Value Logical> | <Conditional Operator> <Logical Denied>
-    def Logical(self):
-        self.nextIndex()
-
-    # <Conditional Operator>  ::= '&&'  | '||' 
-    def ConditionalOperator(self):
-        self.nextIndex()
-
-    # <Logical Denied> ::= '!' Identifier   | '!' <Boolean Literal  | '!' <Logical Expression>  | '!' <Relational Expression>
-    def LogicalDenied(self):
-        self.nextIndex()
-
-    # <If Procedure> ::= 'if' '(' <Conditional Expression><Then Procedure> 
-    def IfProcedure(self):
-        self.nextIndex()
-    
-    # <Then Procedure> ::= ')' 'then' '{'<Body Procedure>'}' <Else Procedure>
-    def ThenProcedure(self):
-        self.nextIndex()
-
-    # <Else Procedure> ::= 'else' '{' <Body Procedure> '}' | 
-    def ElseProcedure(self):
-        self.nextIndex()
-
-    # <Read>  ::= read'(' <Formal Parameter List Read> ')' ';'
-    def Read(self):
-        self.nextIndex()
-
-    # <Print> ::= print'(' <Formal Parameter List>  ')' ';'
-    def Print(self):
-        self.nextIndex()
-
-    # <Assign> ::= <PrefixGlobalLocal> Identifier '=' <Exp> ';'  | Identifier '=' <Exp> ';'  | Identifier <Vector><Assignment_vector> ';' | Identifier <Matrix><Assignment_matrix> ';' | <Exp> ';' 
-    def Assign(self):
-        self.nextIndex()
-    
-    # <Struct Decl>  ::= struct Identifier <Extends> '{' <VariablesList> '}' 
     def StructDecl(self):
         self.nextIndex()
         
-    # <Extends> ::= 'extends' Identifier | 
-    def Extends(self):
+        if('PRE struct' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('IDE' in self.identifiers_file[self.line_index]):
+                struct_name = self.contentIdentifier()
+                self.nextIdentifier()
+                if('DEL {' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    struct_inputs = self.Decls()
+                    if('DEL }' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                        self.table_struct[struct_name] = struct_inputs
+                        self.StructDecl()
+                    else:
+                        self.exception("ESPERADO '}'")
+                        while(not 'PRE const' in self.identifiers_file[self.line_index] or not 'PRE struct' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '{'")
+                    while(not 'PRE const' in self.identifiers_file[self.line_index] or not 'PRE struct' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO UM IDENTIFICADOR")
+                while(not 'PRE const' in self.identifiers_file[self.line_index] or not 'PRE struct' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                return
+                
+    def Decls(self):
+        decl_return = {}
         self.nextIndex()
         
-    #  <Typedef Decl> ::= typedef <Base> Identifier ';'
-    def TypedefDecl(self):
+        if('DEL }' in self.identifiers_file[self.line_index]):
+            return decl_return
+            
+        decl_return = self.Decl()
+        
+        if('DEL ;' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            decl_return.update(self.Decls())
+            return decl_return
+        else:
+            self.exception("ESPERADO ';'")
+            while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Decl(self):
+        decls = {}
+        decl_name = ''
+        decl_type = ''
         self.nextIndex()
         
-    #  <Base> ::= <Type> | struct <Extends> '{' <VariablesList> '}' | <Struct Decl>  
-    def Base(self):
-        self.nextIndex()    
+        decl_type = self.Type()
         
-    # <Start> ::= 'start' '(' ')' '{' <Body Procedure> '}' <Decls> 
-    def Start(self):
+        if('IDE' in self.identifiers_file[self.line_index]):
+            decl_name = self.contentIdentifier()
+            self.nextIdentifier()
+        else:
+            if('DEL ;' in self.identifiers_file[self.line_index]):
+                while('DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                self.exception("';' DUPLICADO")
+            else:
+                self.exception("ESPERADO UM IDENTIFICADOR")
+            while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                
+        decls[decl_name] = decl_type
+        return decls
+        
+    def Type(self):
         self.nextIndex()
+        
+        typeContent = ""
+        if(
+            "PRE int" in self.identifiers_file[self.line_index] or
+            "PRE real" in self.identifiers_file[self.line_index] or
+            "PRE boolean" in self.identifiers_file[self.line_index] or
+            "PRE string" in self.identifiers_file[self.line_index]
+        ):
+            typeContent = self.contentIdentifier()
+            self.nextIdentifier()
+        else:
+            if("DEL ;" in self.identifiers_file[self.line_index]):
+                while("DEL ;" in self.identifiers_file[self.identifiers_file]):
+                    self.nextIdentifier()
+                self.exception("';' DUPLICADOS")
+            self.exception("ESPERADO 'int' OU 'real' OU 'boolean' OU 'string'")
+            while(not 'IDE' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        return typeContent
+    
+    def ConstDecl(self):
+        self.nextIndex()
+        
+        if('PRE const' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL {' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                if(not 'DEL }' in self.identifiers_file[self.line_index]):
+                    self.table_const = self.Decls()
+                if('DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '}'")
+                    if('PRE var' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                    while(not 'PRE var' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO '{'")
+                while(not 'PRE var' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO 'const'")
+            while(not 'PRE var' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Const(self):
+        const_inputs = {}
+        const_values = []
+        self.nextIndex()
+        
+        if('DEL }' in self.identifiers_file[self.line_index]):
+            return const_inputs
+        decls = self.Decl()
+        key = list(decls.keys())
+        const_inputs[key[0]] = const_values
+        const_values.append(decls[key[0]])
+        
+        if('REL =' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            
+            const_value = self.Value()
+            const_values.append(const_value)
+            
+            if('DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                const_inputs.update(self.Const())
+                return const_inputs
+            else:
+                self.exception("ESPERADO ';'")
+                while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '='")
+            while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                                     
+# Função main, cria um objeto e inicia o Analisador Sintatico
+if __name__ == '__main__':
+    analyzer = SyntacticAnalyzer()
+    sys.exit()
