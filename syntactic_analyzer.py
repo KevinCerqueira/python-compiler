@@ -83,34 +83,39 @@ class SyntacticAnalyzer():
             self.line_index = 0
             self.line_current = ""
             
-            self.start()
+            self.Program()
     
     # Vai para o próximo identificador/token
     def nextIdentifier(self):
         self.line_index += 1
-        self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -1]
+        if('$' in self.identifiers_file[self.line_index]):
+            self.write_file.write("ANÁLISE SINTÁTICA FINALIZADA")
+            sys.exit()
+        print(self.line_index, self.identifiers_file[self.line_index])
+        self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
     
     # Pega o conteudo do indentificador/token
     def contentIdentifier(self):
-        return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find('|')+1 : self.identifiers_file[self.line_index].find(' ')]
+        # return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find('|')+1 : self.identifiers_file[self.line_index].find(' ')]
+        return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') : self.identifiers_file[self.line_index].find('\n')]
     
     # Procura por um erro, caso haja vai para a próxima linha
-    def nextIndex(self):
+    def hasException(self):
         if("[ERRO]" in self.identifiers_file[self.line_index]):
             self.line_index += 1
     
     def exception(self, exception):
-        self.write_file.write("{} ERRO SINTÁTICO - {} [{}]".format(self.line_current, exception, self.identifiers_file[self.line_index]))
+        self.write_file.write("{} ERRO SINTATICO - {} [{}]\n".format(self.line_index, exception, self.line_current))
         self.hasError = True
     
     def Program(self):
-        self.nextIndex()
+        self.hasException()
         
         self.StructDecl()
         self.ConstDecl()
         self.table_global = self.VarDecl()
-        self.table_function = self.FuncDecl()
-        self.start()
+        # self.table_function = self.FuncDecl()
+        # self.start()
         
         if(self.hasError):
             self.write_file.write("ERROS SINTÁTICOS - VERIFIQUE E TENTE NOVAMENTE")
@@ -120,20 +125,20 @@ class SyntacticAnalyzer():
             else:
                 self.write_file.write("FIM NÃO ENCONTRADO")
         
-        self.write_file.write('\n')
-        self.write_file.write(self.table_struct)
-        self.write_file.write('\n')
-        self.write_file.write(self.table_const)
-        self.write_file.write('\n')
-        self.write_file.write(self.table_function)
-        self.write_file.write('\n')
-        self.write_file.write(self.table_start)
-        self.write_file.write('\n')
+        # self.write_file.write('\n')
+        # self.write_file.write(self.table_struct)
+        # self.write_file.write('\n')
+        # self.write_file.write(self.table_const)
+        # self.write_file.write('\n')
+        # self.write_file.write(self.table_function)
+        # self.write_file.write('\n')
+        # self.write_file.write(self.table_start)
+        # self.write_file.write('\n')
         
         self.write_file.close()
     
-    def StructDecl(self):
-        self.nextIndex()
+    def StructDecl(self): # registro_declaracao
+        self.hasException()
         
         if('PRE struct' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -161,9 +166,9 @@ class SyntacticAnalyzer():
                     self.nextIdentifier()
                 return
                 
-    def Decls(self):
+    def Decls(self): # declaracao_reg
+        self.hasException()
         decl_return = {}
-        self.nextIndex()
         
         if('DEL }' in self.identifiers_file[self.line_index]):
             return decl_return
@@ -179,11 +184,11 @@ class SyntacticAnalyzer():
             while(not 'DEL }' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Decl(self):
+    def Decl(self): # declaracao
+        self.hasException()
         decls = {}
         decl_name = ''
         decl_type = ''
-        self.nextIndex()
         
         decl_type = self.Type()
         
@@ -203,8 +208,8 @@ class SyntacticAnalyzer():
         decls[decl_name] = decl_type
         return decls
         
-    def Type(self):
-        self.nextIndex()
+    def Type(self): # tipo_primitivo
+        self.hasException()
         
         typeContent = ""
         if(
@@ -217,7 +222,7 @@ class SyntacticAnalyzer():
             self.nextIdentifier()
         else:
             if("DEL ;" in self.identifiers_file[self.line_index]):
-                while("DEL ;" in self.identifiers_file[self.identifiers_file]):
+                while("DEL ;" in self.identifiers_file[self.line_index]):
                     self.nextIdentifier()
                 self.exception("';' DUPLICADOS")
             self.exception("ESPERADO 'int' OU 'real' OU 'boolean' OU 'string'")
@@ -225,8 +230,8 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return typeContent
     
-    def ConstDecl(self):
-        self.nextIndex()
+    def ConstDecl(self): # constante_declaracao
+        self.hasException()
         
         if('PRE const' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -251,10 +256,10 @@ class SyntacticAnalyzer():
             while(not 'PRE var' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Const(self):
+    def Const(self): #declaracao_const
+        self.hasException()
         const_inputs = {}
         const_values = []
-        self.nextIndex()
         
         if('DEL }' in self.identifiers_file[self.line_index]):
             return const_inputs
@@ -281,7 +286,166 @@ class SyntacticAnalyzer():
             self.exception("ESPERADO '='")
             while(not 'DEL }' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
-                                     
+    
+    def Value(self): # valor_primitivo
+        self.hasException()          
+        value = ""
+        
+        if(
+            "PRE false" in self.identifiers_file[self.line_index] or
+            "PRE true" in self.identifiers_file[self.line_index] or
+            "SIM" in self.identifiers_file[self.line_index] or
+            "CAD" in self.identifiers_file[self.line_index] or
+            "NRO" in self.identifiers_file[self.line_index]
+        ):
+            value = self.contentIdentifier()
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO NUMERO, CADEIA DE CARACTERES, SIMBOLO OU VERDADEIRO OU FALSO")
+            while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        return value
+        
+    def VarDecl(self): # variaveis_declaracao
+        self.hasException()
+        return_vardecl = {}
+        
+        if('PRE var' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL {' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                if(not 'DEL }' in self.identifiers_file[self.line_index]):
+                    return_vardecl = self.VariablesList()
+                if('DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '}' NO FINAL DO BLOCO 'var'")
+                    if('PRE function' in self.identifiers_file[self.line_index] or 'PRE start' in self.identifiers_file[self.line_index] or 'PRE procedure' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                    while(not 'PRE function' in self.identifiers_file[self.line_index] or 'PRE start' in self.identifiers_file[self.line_index] or 'PRE procedure' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO '{' APOS DECLARAÇAO 'var'")
+                while(not 'PRE function' in self.identifiers_file[self.line_index] or 'PRE start' in self.identifiers_file[self.line_index] or 'PRE procedure' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.exception("DECLARAÇÃO DO BLOCO 'var' É OBRIGATORIA")
+            while(not 'PRE function' in self.identifiers_file[self.line_index] or 'PRE start' in self.identifiers_file[self.line_index] or 'PRE procedure' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                
+        return return_vardecl
+            
+    def VariablesList(self): # declaracao_var
+        self.hasException()
+        var_globals = {}
+        var_globals_content = []
+        
+        if('IDE' in self.identifiers_file[self.line_index]):
+            type_block = self.contentIdentifier()
+            self.nextIdentifier()
+            if('IDE' in self.identifiers_file[self.line_index]):
+                identifier_block = self.contentIdentifier()
+                self.nextIdentifier()
+                if('DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    var_globals[identifier_block] = var_globals_content
+                    var_globals_content.append(type_block)
+                    var_globals_content.append("TYPE_STRUCT")
+                    var_globals_content.append("NO_INIT")
+                    if(not 'DEL }' in self.identifiers_file[self.line_index]):
+                        var_globals.update(self.VariablesList())
+                    else:
+                        return var_globals
+                else:
+                    self.exception("ESPERADO ';'")
+                    while(
+                        not 'PRE string' in self.identifiers_file[self.line_index] or
+                        not 'PRE real' in self.identifiers_file[self.line_index] or
+                        not 'PRE int' in self.identifiers_file[self.line_index] or
+                        not 'PRE char' in self.identifiers_file[self.line_index] or
+                        not 'PRE boolean' in self.identifiers_file[self.line_index] or
+                        not 'IDE' in self.identifiers_file[self.line_index]
+                    ):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO IDENTIFICACAO DO TIPO DO BLOCO")
+                while(
+                    not 'PRE string' in self.identifiers_file[self.line_index] or
+                    not 'PRE real' in self.identifiers_file[self.line_index] or
+                    not 'PRE int' in self.identifiers_file[self.line_index] or
+                    not 'PRE char' in self.identifiers_file[self.line_index] or
+                    not 'PRE boolean' in self.identifiers_file[self.line_index] or
+                    not 'IDE' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+        elif(
+            'PRE string' in self.identifiers_file[self.line_index] or
+            'PRE real' in self.identifiers_file[self.line_index] or
+            'PRE int' in self.identifiers_file[self.line_index] or
+            'PRE char' in self.identifiers_file[self.line_index] or
+            'PRE boolean' in self.identifiers_file[self.line_index]
+        ):
+            decl = self.Decl()
+            key = list(decl.keys())
+            var_globals[key[0]] = var_globals_content
+            var_globals_content.append(decl[key[0]])
+            
+            # content = []
+            # content = self.Aux()
+            # if(len(content) == 0):
+            #     var_globals_content.append("SIMPLE")
+            #     var_globals_content.append("NO_INIT")
+            # else:
+            #     if(content[0] == 0):
+            #         var_globals_content.append("SIMPLE")
+            #         var_globals_content.append(content[1])
+            #     elif(content[0] == 1):
+            #         var_globals_content.append("VECTOR")
+            #         var_globals_content.append("NO_INIT")
+            #         var_globals_content.append(content[1])
+            #     elif(content[0] == 1):
+            #         var_globals_content.append("MATRIX")
+            #         var_globals_content.append("NO_INIT")
+            #         var_globals_content.append(content[1])
+            #         var_globals_content.append(content[2])
+            if('DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                if(not 'DEL }' in self.identifiers_file[self.line_index]):
+                    var_globals.update(self.VariablesList())
+                else:
+                    return var_globals
+            else:
+                self.exception("ESPERADO ';'")
+                while(
+                    not 'PRE string' in self.identifiers_file[self.line_index] or
+                    not 'PRE real' in self.identifiers_file[self.line_index] or
+                    not 'PRE int' in self.identifiers_file[self.line_index] or
+                    not 'PRE char' in self.identifiers_file[self.line_index] or
+                    not 'PRE boolean' in self.identifiers_file[self.line_index] or
+                    not 'IDE' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+        else:
+            if('DEL ;' in self.identifiers_file[self.line_index]):
+                while('DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                self.exception("';' DUPLICADO")
+            self.exception("ESPERADO 'string' ou 'int' ou 'real' ou 'boolean'")
+            while(
+                    not 'PRE string' in self.identifiers_file[self.line_index] or
+                    not 'PRE real' in self.identifiers_file[self.line_index] or
+                    not 'PRE int' in self.identifiers_file[self.line_index] or
+                    not 'PRE char' in self.identifiers_file[self.line_index] or
+                    not 'PRE boolean' in self.identifiers_file[self.line_index] or
+                    not 'IDE' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+        return var_globals
+            
+    def Aux(self): # identificador_deriva
+        pass
+        
+
 # Função main, cria um objeto e inicia o Analisador Sintatico
 if __name__ == '__main__':
     analyzer = SyntacticAnalyzer()
