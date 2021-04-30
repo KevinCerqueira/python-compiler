@@ -443,7 +443,295 @@ class SyntacticAnalyzer():
         return var_globals
             
     def Aux(self): # identificador_deriva
-        pass
+        self.hasError()
+        return_identifier = []
+        vector_matrix = 0
+        
+        if('DEL ;' in self.identifiers_file[self.line_index]):
+            return return_identifier
+        elif('DEL [' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('NRO' in self.identifiers_file[self.line_index]):
+                vector_large = self.contentIdentifier()
+                self.nextIdentifier()
+                if('DEL ]' in self.identifiers_file[self.line_index]):
+                    return_matrix = self.Matrix()
+                    if(return_matrix > 0):
+                        vector_matrix = 2
+                        return_identifier.append(vector_matrix)
+                        return_identifier.append(vector_large)
+                        return_identifier.append(return_matrix)
+                    else:
+                        vector_matrix = 1
+                        return_identifier.append(vector_matrix)
+                        return_identifier.append(vector_large)
+                else:
+                    self.exception("COLCHETES DECLARADOS DE FORMA INCORRETA")
+                    while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO NUMERO INTEIRO")
+                while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        elif('REL =' in self.identifiers_file[self.line_index]):
+            init_value = self.Init()
+            return_identifier.append(vector_matrix)
+            return_identifier.append(init_value)
+        else:
+            self.exception("ESPERADO '=' ou '['")
+            while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        return return_identifier
+        
+    def Matrix(self): # matriz
+        self.hasError()
+        
+        if('DEL ;' in self.identifiers_file[self.line_index]):
+            return -1
+        elif('DEL [' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('NRO' in self.identifiers_file[self.line_index]):
+                matrix_height = self.contentIdentifier()
+                self.nextIdentifier()
+                if('DEL ]' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    return matrix_height
+                else:
+                    self.exception("COLCHETES DECLARADOS DE FORMA INCORRETA")
+                    while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO NUMERO INTEIRO")
+                while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '='")
+            while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Init(self): # inicializacao
+        self.nextIdentifier()
+        
+        if("DEL ;" in self.identifiers_file[self.line_index]):
+            return
+        elif('REL =' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            return self.Value()
+            
+    def FunctionDeclaration(self):
+        self.hasError()
+        func_table = {}
+        func_content = []
+        func_params = []
+        
+        if("PRE start" in self.identifiers_file[self.line_index]):
+            return func_table
+        elif("PRE function" in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            func_content.append(self.ReturnType())
+            
+            if('IDE' in self.identifiers_file[self.line_index]):
+                func_name = self.contentIdentifier()
+                func_table[func_name] = func_content
+                self.nextIdentifier()
+                if('DEL (' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if(not 'DEL )' in self.identifiers_file[self.line_index]):
+                        func_params = self.Params()
+                    if('DEL )' in self.identifiers_file[self.line_index]):
+                        func_content.append(func_params)
+                        self.nextIdentifier()
+                        if('DEL {' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                            if(not 'DEL }' in self.identifiers_file[self.line_index]):
+                                self.deriva_cont_funcao() # LEMBRAR PARA SUBSTITUIR PELO NOVO NOME
+                            if('DEL }' in self.identifiers_file[self.line_index]):
+                                self.nextIdentifier()
+                                func_table.update(self.FunctionDeclaration())
+                            else:
+                                self.exception("ESPERADO '}'")
+                                while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                                    self.nextIdentifier()
+                        else:
+                            self.exception("ESPERADO '{'")
+                            while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                                self.nextIdentifier()
+                    else:
+                        self.exception("ESPERADO ')'")
+                        while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '('")
+                    while('PRE start' in self.identifiers_file[self.line_index] or 'PRE function' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                    while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO UM IDENTIFICADOR")
+                while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '{'")
+            if('PRE start' in self.identifiers_file[self.line_index] or 'PRE function' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+            while(not 'PRE start' in self.identifiers_file[self.line_index] or not 'PRE function' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        return func_table
+    
+    def ReturnType(self): # tipo_return TIRAMOS UMA PARTE DO COD ORIGIN
+        self.hasError()
+        
+        return_type = []
+        
+        if('IDE' in self.identifiers_file[self.line_index]):
+            return_type.append(self.contentIdentifier())
+            return_type.append("struct")
+            self.nextIdentifier()
+        elif(
+            'PRE CADEIA' in self.identifiers_file[self.line_index] or
+            'PRE real' in self.identifiers_file[self.line_index] or
+            'PRE int' in self.identifiers_file[self.line_index] or
+            'PRE string' in self.identifiers_file[self.line_index] or
+            'PRE boolean' in self.identifiers_file[self.line_index]
+        ):
+            return_type.append(self.Type())
+            vector_matrix = self.MatrixIdentifier()
+            if(vector_matrix == 0):
+                return_type.append('simple')
+            elif(vector_matrix == 1):
+                return_type.append('vector')
+            elif(vector_matrix == 2):
+                return_type.append('matrix')
+        else:
+            self.exception('ESPERADO RETORNO')
+            while(not 'IDE' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        return return_type
+    
+    def Params(self): # decl_param
+        self.hasError()
+        params = []
+        params_list = []
+        
+        if('IDE' in self.identifiers_file[self.line_index]):
+            param_type = self.contentIdentifier()
+            self.nextIdentifier()
+            if('IDE' in self.identifiers_file[self.line_index]):
+                param_name = self.contentIdentifier()
+                params_list.append(param_name)
+                params_list.append(param_type)
+                params_list.append("struct")
+                params.append(params_list)
+                self.nextIdentifier()
+                params += self.Param()
+            else:
+                self.exception("ESPERADO UM IDENTIFICADOR")
+                while(not 'DEL ,' in self.identifiers_file[self.line_index] or not 'DEL )' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        elif(
+            'PRE CADEIA' in self.identifiers_file[self.line_index] or
+            'PRE real' in self.identifiers_file[self.line_index] or
+            'PRE int' in self.identifiers_file[self.line_index] or
+            'PRE string' in self.identifiers_file[self.line_index] or
+            'PRE boolean' in self.identifiers_file[self.line_index]
+        ):
+            decl = self.Decl()
+            param_name = list(decl.keys())
+            params_list.append(param_name[0])
+            params_list.append(decl[param_name[0]])
+            
+            vector_matrix = self.MatrixIdentifier()
+            if(vector_matrix == 0):
+                params_list.append('simple')
+            elif(vector_matrix == 1):
+                params_list.append('vector')
+            elif(vector_matrix == 2):
+                params_list.append('matrix')
+            params.append(params_list)
+            params += self.Param()
+        else:
+            self.exception("ESPERADO UM TIPO")
+            while(not 'DEL ,' in self.identifiers_file[self.line_index] or not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier
+        return params
+    
+    def MatrixIdentifier(self): # identificador_param_deriva
+        self.hasError()
+        vector_matrix = 0
+        
+        if(
+            'DEL ,' in self.identifiers_file[self.line_index] or
+            'DEL )' in self.identifiers_file[self.line_index] or
+            'IDE' in self.identifiers_file[self.line_index] 
+        ):
+            return vector_matrix
+        elif('DEL [' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL ]' in self.identifiers_file[self.line_index]):
+                vector_matrix = 1
+                self.nextIdentifier()
+                vector_matrix += self.MatrixParam()
+            else:
+                self.exception("ESPERADO ']'")
+                while(
+                    not 'DEL ,' in self.identifiers_file[self.line_index] or
+                    not 'DEL )' in self.identifiers_file[self.line_index] or
+                    not 'IDE' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '['")
+            while(
+                not 'DEL ,' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+        return vector_matrix
+    
+    def MatrixParam(self): # matriz_param
+        self.hasError()
+        return_matrix = 0
+        
+        if(
+            'DEL ,' in self.identifiers_file[self.line_index] or 
+            'DEL )' in self.identifiers_file[self.line_index] or 
+            'IDE' in self.identifiers_file[self.line_index]
+        ):
+            return return_matrix
+        elif('DEL [' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL ]' in self.identifiers_file[self.line_index]):
+                return_matrix = 1
+                self.nextIdentifier()
+            else:
+                self.exception("ESPERADO ']'")
+                while(
+                    not 'DEL ,' in self.identifiers_file[self.line_index] or
+                    not 'DEL )' in self.identifiers_file[self.line_index] or
+                    not 'IDE' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '['")
+            while(
+                not 'DEL ,' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+        return return_matrix
+    
+    def Param(self): # deriva_param
+        self.hasError()
+        return_param = []
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return return_param
+        elif('DEL ,' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            return_param += self.Params()
+        return return_param 
         
 
 # Função main, cria um objeto e inicia o Analisador Sintatico
