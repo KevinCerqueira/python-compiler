@@ -1042,8 +1042,340 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def MatrixCall(self): # matriz_chamada
-        pass
+        self.hasError()
+        
+        if('DEL ;' in self.identifiers_file[self.line_index]):
+            return
+        elif('DEL [' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Index()
+            if('DEL ]' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+            else:
+                self.exception("ESPERADO ']'")
+                while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        else:
+            self.nextIdentifier("ESPERADO '['")
+            while(not 'DEL ;' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
     
+    def Index(self):
+        self.hasError()
+        
+        if('DEL ]' in self.identifiers_file[self.line_index]):
+            return
+        if('NRO' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO INDICE DO VETOR/MATRIZ")
+            while(not 'DEL ]' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def If(self): # se_declaracao
+        self.hasError()
+        hasErro = False
+        
+        if('PRE if' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL (' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.ConditionalExpression()
+                if('DEL )' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if('DEL {' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                        self.PreDecls()
+                        if('DEL }' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                            self.Else()
+                        else:
+                            self.exception("ESPERADO '}'")
+                            hasErro = True
+                    else:
+                        self.exception("ESPERADO '{'")
+                        hasErro = True
+                else:
+                    self.exception("ESPERADO ')'")
+                    hasErro = True
+            else:
+                self.exception("ESPERADO '('")
+                hasErro = True
+        else:
+            self.exception("ESPERADO '}'")
+            hasErro = True
+                
+        if(hasErro):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Else(self): # senao_decl
+        self.hasError()
+        hasErro = False
+        
+        if(
+            'DEL }' in self.identifiers_file[self.line_index] or
+            'PRE if' in self.identifiers_file[self.line_index] or
+            'PRE print' in self.identifiers_file[self.line_index] or
+            'PRE read' in self.identifiers_file[self.line_index] or
+            'PRE while' in self.identifiers_file[self.line_index] or
+            'PRE for' in self.identifiers_file[self.line_index] or
+            'PRE return' in self.identifiers_file[self.line_index] or
+            'IDE' in self.identifiers_file[self.line_index]
+        ):
+            return
+        elif('PRE else' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL {' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.PreDecls()
+                if('DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '}'")
+                    hasErro = True
+            else:
+                self.exception("ESPERADO '{'")
+                hasErro = True
+
+        else:
+            self.exception("ESPERADO BLOCO DO 'else'")
+            hasErro = True
+        
+        if(hasErro):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+        
+    def While(self):
+        self.hasError()
+        hasErro = False
+        
+        if('PRE while' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL (' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.ConditionalExpression()
+                if('DEL )' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if('DEL {' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                        self.PreDecls()
+                        if('DEL }' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                        else:
+                            self.exception("ESPERADO '}'")
+                            hasErro = True
+                    else:
+                        self.exception("ESPERADO '{'")
+                        hasErro = True
+                else:
+                    self.exception("ESPERADO ')'")
+                    hasErro = True
+            else:
+                self.exception("ESPERADO '('")
+                hasErro = True
+        else:
+            self.exception("ESPERADO LAÇO 'while'")
+            hasErro = True
+        
+        if(hasErro):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    def For(self): # para_declaracao
+        self.hasError()
+        hasErro = False
+        hasErroIDE = False
+        
+        if('PRE for' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL (' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                if('IDE' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if('REL =' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                        if('NRO' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                            if('DEL ;' in self.identifiers_file[self.line_index]):
+                                self.nextIdentifier()
+                                if('IDE' in self.identifiers_file[self.line_index]):
+                                    self.nextIdentifier()
+                                    self.RelacionalExpression()
+                                    if('NRO' in self.identifiers_file[self.line_index]):
+                                        self.nextIdentifier()
+                                        if('DEL ;' in self.identifiers_file[self.line_index]):
+                                            self.nextIdentifier()
+                                            if('IDE' in self.identifiers_file[self.line_index]):
+                                                self.PpMm()
+                                                if('DEL )' in self.identifiers_file[self.line_index]):
+                                                    self.nextIdentifier()
+                                                    if('DEL {' in self.identifiers_file[self.line_index]):
+                                                        self.nextIdentifier()
+                                                        self.PreDecls()
+                                                        if('DEL }' in self.identifiers_file[self.line_index]):
+                                                            self.nextIdentifier()
+                                                        else:
+                                                            self.exception("ESPERADO '}'")
+                                                            hasErroIDE = True
+                                                    else:
+                                                        self.exception("ESPERADO '{'")
+                                                        hasErroIDE = True
+                                                else:
+                                                    self.exception("ESPERADO ')'")
+                                                    hasErroIDE = True
+                                            else:
+                                                self.exception("ESPERADO IDENTIFICADOR")
+                                                hasErro = True
+                                        else:
+                                            self.exception("ESPERADO ';'")
+                                            hasErro = True
+                                    else:
+                                        self.exception("ESPERADO NUMERO NO LAÇO 'for'")
+                                        hasErro = True
+                                else:
+                                    self.exception("ESPERADO IDENTIFICADOR")
+                                    hasErroIDE = True
+                            else:
+                                self.exception("ESPERADO ';'")
+                                hasErro = True
+                        else:
+                            self.exception("ESPERADO NUMERO NO LAÇO 'for'")
+                            hasErro = True
+                    else:
+                        self.exception("ESPERADO ATRIBUICAO ('=')")
+                        hasErro = True
+                else:
+                    self.exception("ESPERADO IDENTIFICADOR PARA PERCORRER O LAÇO 'for'")
+                    hasErro = True
+            else:
+                self.exception("ESPERADO '('")
+                hasErro = True
+        else:
+            self.exception("ESPERADO LAÇO 'for'")
+            hasErroIDE = True
+        
+        if(hasErroIDE):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+        if(hasErro):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+                
+    def Read(self): # leia_declaracao
+        self.hasErro()
+        hasErro = False
+        
+        if('PRE read' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL (' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.FormalParameterListRead()
+                if('DEL )' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if('DEL ;' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                    else:
+                        self.exception("ESPERADO ';'")
+                        hasErro = True
+                else:
+                    self.exception("ESPERADO ')'")
+                    hasErro = True
+            else:
+                self.exception("ESPERADO '('")
+                hasErro = True
+        else:
+            self.exception("ESPERADO 'read'")
+            hasErro = True
+        
+        if(hasErro):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def FormalParameterListRead(self): # exp_leia
+        self.hasErro()
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return
+        elif('IDE' in self.identifiers_file[self.line_index]):
+            self.AuxRead1()
+            self.AuxRead2()
+            self.FormalParameterListRead()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def AuxRead1(self): # exp_armazena
+        self.hasErro()
+        
+        if('IDE' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Reserved()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR")
+            while(not 'DEL )' in self.identifiers_file[self.line_index] or 'DEL ,' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def AuxRead2(self): # exp_leia_deriva
+        self.hasErro()
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return
+        elif('DEL ,' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.AuxRead1()
+        else:
+            self.exception("ESPERADO ','")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                
 # Função main, cria um objeto e inicia o Analisador Sintatico
 if __name__ == '__main__':
     analyzer = SyntacticAnalyzer()
