@@ -87,11 +87,11 @@ class SyntacticAnalyzer():
     
     # Vai para o próximo identificador/token
     def nextIdentifier(self):
-        self.line_index += 1
-        if('$' in self.identifiers_file[self.line_index]):
-            self.write_file.write("ANÁLISE SINTÁTICA FINALIZADA")
-            sys.exit()
+        # if('$' in self.identifiers_file[self.line_index]):
+        #     self.write_file.write("ANALISE SINTATICA FINALIZADA")
+        #     self.Program()
         print(self.line_index, self.identifiers_file[self.line_index])
+        self.line_index += 1
         self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
     
     # Pega o conteudo do indentificador/token
@@ -114,8 +114,8 @@ class SyntacticAnalyzer():
         self.StructDecl()
         self.ConstDecl()
         self.table_global = self.VarDecl()
-        # self.table_function = self.FuncDecl()
-        # self.start()
+        self.table_function = self.FunctionDeclaration()
+        self.Start()
         
         if(self.hasError):
             self.write_file.write("ERROS SINTÁTICOS - VERIFIQUE E TENTE NOVAMENTE")
@@ -443,7 +443,7 @@ class SyntacticAnalyzer():
         return var_globals
             
     def Aux(self): # identificador_deriva
-        self.hasError()
+        self.hasException()
         return_identifier = []
         vector_matrix = 0
         
@@ -484,7 +484,7 @@ class SyntacticAnalyzer():
         return return_identifier
         
     def Matrix(self): # matriz
-        self.hasError()
+        self.hasException()
         
         if('DEL ;' in self.identifiers_file[self.line_index]):
             return -1
@@ -519,7 +519,7 @@ class SyntacticAnalyzer():
             return self.Value()
             
     def FunctionDeclaration(self):
-        self.hasError()
+        self.hasException()
         func_table = {}
         func_content = []
         func_params = []
@@ -579,7 +579,7 @@ class SyntacticAnalyzer():
         return func_table
     
     def ReturnType(self): # tipo_return TIRAMOS UMA PARTE DO COD ORIGIN
-        self.hasError()
+        self.hasException()
         
         return_type = []
         
@@ -609,7 +609,7 @@ class SyntacticAnalyzer():
         return return_type
     
     def Params(self): # decl_param
-        self.hasError()
+        self.hasException()
         params = []
         params_list = []
         
@@ -656,7 +656,7 @@ class SyntacticAnalyzer():
         return params
     
     def MatrixIdentifier(self): # identificador_param_deriva
-        self.hasError()
+        self.hasException()
         vector_matrix = 0
         
         if(
@@ -690,7 +690,7 @@ class SyntacticAnalyzer():
         return vector_matrix
     
     def MatrixParam(self): # matriz_param
-        self.hasError()
+        self.hasException()
         return_matrix = 0
         
         if(
@@ -723,7 +723,7 @@ class SyntacticAnalyzer():
         return return_matrix
     
     def Param(self): # deriva_param
-        self.hasError()
+        self.hasException()
         return_param = []
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -734,7 +734,7 @@ class SyntacticAnalyzer():
         return return_param 
     
     def FunctionParam(self): # deriva_cont_funcao
-        self.hasError()
+        self.hasException()
         
         if('PRE var' in self.identifiers_file[self.line_index]):
             local_vars = self.VarDecl()
@@ -774,7 +774,7 @@ class SyntacticAnalyzer():
                 
                 
     def Return(self): # return_deriva TIRAMOS UMA PARTE DO COD ORIGIN
-        self.hasError()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -793,7 +793,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def PreDecls(self): # decl_comandos
-        self.hasError()
+        self.hasException()
         
         if('PRE return' in self.identifiers_file[self.line_index] or 'DEL }' in self.identifiers_file[self.line_index]):
             return
@@ -821,7 +821,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def Cmd(self): # comandos
-        self.hasError()
+        self.hasException()
         
         if('PRE if' in self.identifiers_file[self.line_index]):
             self.If()
@@ -850,7 +850,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
     def Assign(self): # atribuicao
-        self.hasError()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -901,7 +901,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()     
                    
     def Assigns(self): # atribuicao_deriva
-        self.hasError()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.FunctionCall()
@@ -919,7 +919,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
     def FunctionCall(self): # chamada_funcao
-        self.hasError()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -942,7 +942,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
     def ParamCall(self): # decl_param_chamada
-        self.hasError()
+        self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
             return
@@ -960,7 +960,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
     def DeclCall(self): # decl_chamada
-        self.hasError()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -977,7 +977,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def ParamsCall(self): # chamada_param_deriva
-        self.hasError()
+        self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
             return
@@ -990,7 +990,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def Reserved(self): # identificador_imp_arm_deriva
-        self.hasError()
+        self.hasException()
         
         if(
             'DEL ;' in self.identifiers_file[self.line_index] or
@@ -1042,7 +1042,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def MatrixCall(self): # matriz_chamada
-        self.hasError()
+        self.hasException()
         
         if('DEL ;' in self.identifiers_file[self.line_index]):
             return
@@ -1061,7 +1061,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def Index(self):
-        self.hasError()
+        self.hasException()
         
         if('DEL ]' in self.identifiers_file[self.line_index]):
             return
@@ -1073,7 +1073,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def If(self): # se_declaracao
-        self.hasError()
+        self.hasException()
         hasErro = False
         
         if('PRE if' in self.identifiers_file[self.line_index]):
@@ -1118,7 +1118,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def Else(self): # senao_decl
-        self.hasError()
+        self.hasException()
         hasErro = False
         
         if(
@@ -1163,7 +1163,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         
     def While(self):
-        self.hasError()
+        self.hasException()
         hasErro = False
         
         if('PRE while' in self.identifiers_file[self.line_index]):
@@ -1206,7 +1206,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     def For(self): # para_declaracao
-        self.hasError()
+        self.hasException()
         hasErro = False
         hasErroIDE = False
         
@@ -1224,7 +1224,7 @@ class SyntacticAnalyzer():
                                 self.nextIdentifier()
                                 if('IDE' in self.identifiers_file[self.line_index]):
                                     self.nextIdentifier()
-                                    self.RelacionalExpression()
+                                    self.Relational()
                                     if('NRO' in self.identifiers_file[self.line_index]):
                                         self.nextIdentifier()
                                         if('DEL ;' in self.identifiers_file[self.line_index]):
@@ -1301,7 +1301,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
     def Read(self): # leia_declaracao
-        self.hasErro()
+        self.hasException()
         hasErro = False
         
         if('PRE read' in self.identifiers_file[self.line_index]):
@@ -1339,7 +1339,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def FormalParameterListRead(self): # exp_leia
-        self.hasErro()
+        self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
             return
@@ -1353,7 +1353,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def AuxRead1(self): # exp_armazena
-        self.hasErro()
+        self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
@@ -1364,7 +1364,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
     
     def AuxRead2(self): # exp_leia_deriva
-        self.hasErro()
+        self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
             return
@@ -1374,6 +1374,500 @@ class SyntacticAnalyzer():
         else:
             self.exception("ESPERADO ','")
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Print(self): # escreva_declaracao
+        self.hasException()
+        hasError = False
+        
+        if('PRE print' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL (' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.AuxExpPrint()
+                if('DEL )' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                    if('DEL ;' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                    else:
+                        self.exception("ESPERADO ';'")
+                        hasError = True
+                else:
+                    self.exception("ESPERADO ')'")
+                    hasError = True
+            else:
+                self.exception("ESPERADO '('")
+                hasError = True
+        else:
+            self.exception("ESPERADO 'print'")
+            hasError = True
+        
+        if(hasError):
+            while(
+                not 'PRE if' in self.identifiers_file[self.line_index] or
+                not 'PRE print' in self.identifiers_file[self.line_index] or
+                not 'PRE read' in self.identifiers_file[self.line_index] or
+                not 'PRE while' in self.identifiers_file[self.line_index] or
+                not 'PRE for' in self.identifiers_file[self.line_index] or
+                not 'PRE return' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def AuxExpPrint(self): # exp_escreva
+        self.hasException()
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return
+        elif(
+            'CAD' in self.identifiers_file[self.line_index] or
+            'SIM' in self.identifiers_file[self.line_index] or
+            'IDE' in self.identifiers_file[self.line_index] or
+            '(' in self.identifiers_file[self.line_index]  
+        ):
+            self.AuxExpPrint3()
+            self.AuxExpPrint2() # CASO DER MERDA TIRA AQUI
+            self.AuxExpPrint()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR OU CADEIA DE CARACTERES")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        
+    def AuxExpPrint2(self): # exp_escreva_deriva
+        self.hasException()
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return
+        elif('DEL ,' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.AuxExpPrint3()
+        else:
+            self.exception("ESPERADO ','")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def AuxExpPrint3(self): # exp_imprime
+        self.hasException()
+        hasError = False
+        
+        if(
+            'CAD' in self.identifiers_file[self.line_index] or
+            'SIM' in self.identifiers_file[self.line_index]
+        ):
+            self.nextIdentifier()
+        elif('IDE' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Reserved()
+        elif('DEL (' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.AddExp()
+            if('DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+            else:
+                self.exception("ESPERADO ')'")
+                hasError = True
+        else:
+            self.exception("ESPERADO '('")
+            hasError = True
+        
+        if(hasError):
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+        
+    def ConditionalExpression(self): # exp_rel_bol
+        self.hasException()
+        
+        if(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.LogicalExpression()
+            self.Relational()
+            self.LogicalExpression()
+            self.RelationalExpression()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR, NUMERO OU '('")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def LogicalExpression(self): # exp_boll
+        self.hasException()
+        
+        if(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.Term()
+            self.Terms()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR, NUMERO OU '('")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL >=' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def AddExp(self): # exp_simples
+        self.hasException()
+        
+        if('ART +' in self.identifiers_file[self.line_index] or 'ART -' in self.identifiers_file[self.line_index]):
+            self.Plus()
+            self.Term()
+            self.Terms()
+        elif(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.Term()
+            self.Terms()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR, NUMERO, '(', '+' ou '-'")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL >=' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'LOG &&' in self.identifiers_file[self.line_index] or
+                not 'LOG ||' in self.identifiers_file[self.line_index] or
+                not 'DEL ;' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] 
+            ):
+                self.nextIdentifier()
+    
+    def Relational(self): # op_relacional
+        self.hasException()
+        
+        if(
+            'REL <=' in self.identifiers_file[self.line_index] or
+            'REL >=' in self.identifiers_file[self.line_index] or
+            'REL >' in self.identifiers_file[self.line_index] or
+            'REL <' in self.identifiers_file[self.line_index] or
+            'REL ==' in self.identifiers_file[self.line_index] or
+            'REL !=' in self.identifiers_file[self.line_index]
+        ):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO OPERADOR RELACIONAL ('<=', '>=', '<', '>', '==' ou '!=')")
+            while(
+                not 'IDE' in self.identifiers_file[self.line_index] or
+                not 'NRO' in self.identifiers_file[self.line_index] or
+                not 'ART +' in self.identifiers_file[self.line_index] or
+                not 'ART -' in self.identifiers_file[self.line_index] or
+                not 'DEL (' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+                
+    def RelationalExpression(self): # exp_rel_deriva
+        self.hasException()
+        
+        if('DEL )' in self.identifiers_file[self.line_index]):
+            return
+        elif('LOG &&' in self.identifiers_file[self.line_index] or 'LOG ||' in self.identifiers_file[self.line_index]):
+            self.Logical()
+            self.AddExp()
+            self.Relational()
+            self.AddExp()
+            self.RelationalExpression()
+        else:
+            self.exception("ESPERADO '&&' ou '||'")
+            while(not 'DEL ' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Plus(self): # op_ss
+        self.hasException()
+        
+        if(
+            'ART +' in self.identifiers_file[self.line_index] or
+            'ART -' in self.identifiers_file[self.line_index]
+        ):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '+' ou '-'")
+            while(
+                not 'IDE' in self.identifiers_file[self.line_index] or
+                not 'NRO' in self.identifiers_file[self.line_index] or
+                not 'DEL (' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Term(self): # termo
+        self.hasException()
+        
+        if(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.Factor()
+            self.FactorAux()
+        else:
+            self.exception("ESPERADO IDENTIFICADOR, NUMERO OU '('")
+            while(not 'ART +' in self.identifiers_file[self.line_index] or not 'ART -' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Terms(self): # termo_deriva
+        self.hasException()
+        
+        if(
+            'REL <=' in self.identifiers_file[self.line_index] or
+            'REL >=' in self.identifiers_file[self.line_index] or
+            'REL >' in self.identifiers_file[self.line_index] or
+            'REL <' in self.identifiers_file[self.line_index] or
+            'REL ==' in self.identifiers_file[self.line_index] or
+            'REL !=' in self.identifiers_file[self.line_index] or
+            'DEL )' in self.identifiers_file[self.line_index] or
+            'DEL ;' in self.identifiers_file[self.line_index] or
+            'LOG &&' in self.identifiers_file[self.line_index] or
+            'LOG ||' in self.identifiers_file[self.line_index]
+        ):
+            return
+        elif('ART +' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Sum()
+        elif('ART -' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Subtraction()
+        else:
+            self.exception("ESPERADO '+' ou '-'")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL >=' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] or
+                not 'DEL ;' in self.identifiers_file[self.line_index] or
+                not 'LOG &&' in self.identifiers_file[self.line_index] or
+                not 'LOG ||' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Logical(self): # op_bolleano
+        self.hasException()
+        
+        if('REL &&' in self.identifiers_file[self.line_index] or 'REL ||' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '&&' ou '||'")
+            while(
+                not 'ART +' in self.identifiers_file[self.line_index] or
+                not 'ART -' in self.identifiers_file[self.line_index] or
+                not 'IDE' in self.identifiers_file[self.line_index] or
+                not 'NRO' in self.identifiers_file[self.line_index] or
+                not 'DEL (' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Factor(self): # fator
+        self.hasException()
+        
+        if('IDE' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.Reserved()
+        elif('NRO' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        elif('DEL (' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            self.AddExp()
+            if('DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+            else:
+                self.exception("ESPERADO ')'")
+        else:
+            self.exception("ESPERADO IDENTIFICADOR OU NUMERO")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL >=' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'REL =' in self.identifiers_file[self.line_index] or
+                not 'ART +' in self.identifiers_file[self.line_index] or
+                not 'ART -' in self.identifiers_file[self.line_index] or
+                not 'ART *' in self.identifiers_file[self.line_index] or
+                not 'ART /' in self.identifiers_file[self.line_index] or
+                not 'ART ++' in self.identifiers_file[self.line_index] or
+                not 'ART --' in self.identifiers_file[self.line_index] or
+                not 'LOG &&' in self.identifiers_file[self.line_index] or
+                not 'LOG ||' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+                
+    def FactorAux(self): # fator_deriva
+        self.hasException()
+        
+        if(
+            not 'REL <=' in self.identifiers_file[self.line_index] or
+            not 'REL >=' in self.identifiers_file[self.line_index] or
+            not 'REL <' in self.identifiers_file[self.line_index] or
+            not 'REL >' in self.identifiers_file[self.line_index] or
+            not 'REL ==' in self.identifiers_file[self.line_index] or
+            not 'REL !=' in self.identifiers_file[self.line_index] or
+            not 'REL =' in self.identifiers_file[self.line_index] or
+            not 'ART +' in self.identifiers_file[self.line_index] or
+            not 'ART -' in self.identifiers_file[self.line_index] or
+            not 'ART ++' in self.identifiers_file[self.line_index] or
+            not 'ART --' in self.identifiers_file[self.line_index] or
+            not 'LOG &&' in self.identifiers_file[self.line_index] or
+            not 'LOG ||' in self.identifiers_file[self.line_index] or
+            not 'DEL ;' in self.identifiers_file[self.line_index] or
+            not 'DEL )' in self.identifiers_file[self.line_index]
+        ):
+            return
+        elif('ART *' in self.identifiers_file[self.line_index] or 'ART /' in self.identifiers_file[self.line_index]):
+            self.DivisorMultiplier()
+            self.Term()
+        else:
+            self.exception("ESPERADO '*' ou '/'")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL >=' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'REL =' in self.identifiers_file[self.line_index] or
+                not 'ART +' in self.identifiers_file[self.line_index] or
+                not 'ART -' in self.identifiers_file[self.line_index] or
+                not 'ART ++' in self.identifiers_file[self.line_index] or
+                not 'ART --' in self.identifiers_file[self.line_index] or
+                not 'LOG &&' in self.identifiers_file[self.line_index] or
+                not 'LOG ||' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Sum(self): # op_soma_deriva
+        self.hasException()
+        
+        if('ART +' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        elif(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.Term()
+            self.Terms()
+        else:
+            self.exception("ESPERADO '+'")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] or
+                not 'DEL ;' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def Subtraction(self): # op_sub_deriva
+        self.hasException()
+        
+        if('ART -' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        elif(
+            'IDE' in self.identifiers_file[self.line_index] or
+            'NRO' in self.identifiers_file[self.line_index] or
+            'DEL (' in self.identifiers_file[self.line_index]
+        ):
+            self.Term()
+            self.Terms()
+        else:
+            self.exception("ESPERADO '-'")
+            while(
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL <=' in self.identifiers_file[self.line_index] or
+                not 'REL <' in self.identifiers_file[self.line_index] or
+                not 'REL >' in self.identifiers_file[self.line_index] or
+                not 'REL ==' in self.identifiers_file[self.line_index] or
+                not 'REL !=' in self.identifiers_file[self.line_index] or
+                not 'DEL )' in self.identifiers_file[self.line_index] or
+                not 'DEL ;' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def DivisorMultiplier(self):
+        self.hasException()
+        
+        if('ART *' in self.identifiers_file[self.line_index] or 'ART /' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '*' ou '/'")
+            while(
+                not 'IDE' in self.identifiers_file[self.line_index] or
+                not 'NRO' in self.identifiers_file[self.line_index] or
+                not 'DEL (' in self.identifiers_file[self.line_index]
+            ):
+                self.nextIdentifier()
+    
+    def PpMm(self): # op_cont
+        self.hasException()
+        
+        if('ART ++' in self.identifiers_file[self.line_index] or 'ART --' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+        else:
+            self.exception("ESPERADO '++' ou '--'")
+            while(not 'DEL )' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def Start(self): # algoritmo_declaracao
+        self.hasException()
+        
+        if('PRE start' in self.identifiers_file[self.line_index]):
+            self.nextIdentifier()
+            if('DEL {' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                self.StartAux()
+                if('DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO '}'")
+                    while(not '$' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()  
+            else:
+                self.exception("ESPERADO '{'")
+                while(not '$' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()  
+        else:
+            self.exception("ESPERADO 'start'")
+            while(not '$' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+    
+    def StartAux(self): # deriva_cont_principal
+        self.hasException()
+        
+        if('DEL }' in self.identifiers_file[self.line_index]):
+            return
+        elif('PRE var' in self.identifiers_file[self.line_index]):
+            self.VarDecls()
+            self.PreDecls()
+        elif(
+            'PRE if' in self.identifiers_file[self.line_index] or
+            'PRE print' in self.identifiers_file[self.line_index] or
+            'PRE read' in self.identifiers_file[self.line_index] or
+            'PRE while' in self.identifiers_file[self.line_index] or
+            'PRE for' in self.identifiers_file[self.line_index] or
+            'PRE return' in self.identifiers_file[self.line_index] or
+            'IDE' in self.identifiers_file[self.line_index]
+        ):
+            self.PreDecls()
+        else:
+            while('}' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
                 
 # Função main, cria um objeto e inicia o Analisador Sintatico
