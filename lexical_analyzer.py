@@ -249,6 +249,7 @@ class LexicalAnalyzer():
                                     break
                             if(check):
                                 write_file.write('{}|CAD {} \n'.format(str(line_index).zfill(2), inside_quotes))
+                                index -= 1
 
                     # Verifica se o índíce é uma aspa simples
                     elif(current_index == string.punctuation[6]):
@@ -299,6 +300,7 @@ class LexicalAnalyzer():
                         check = False
                         current_character = current_index
                         index += 1
+                        goBreak = False
 
                         # Percorre a linha do arquivo para pegar toda a palavra
                         while(index < length_line):
@@ -312,6 +314,17 @@ class LexicalAnalyzer():
                             # Verifica se o caracter atual é uma letra e se o caracter seguinte é um digito ou um traço                              
                             if(self.isLetter(current_index) or self.isDigit(current_index) or current_index == "_"):
                                 current_character += current_index
+                            elif(current_index == '.'):
+                                if(current_character == 'global' or current_character == 'local'):
+                                    write_file.write('{}|PRE {} \n'.format(str(line_index).zfill(2), current_character))
+                                else:
+                                    write_file.write('{}|IDE {} \n'.format(str(line_index).zfill(2), current_character))
+                                    
+                                write_file.write('{}|DEL {} \n'.format(str(line_index).zfill(2), current_index))
+                                #index += 1
+                                goBreak = True
+                                break
+                                
                             # Verifica se o caracter atual é um delimitador    
                             elif(self.isDelimiter(current_index) or current_index == ' ' or current_index == '\t' or current_index == '\r'):
                                 index -= 1
@@ -340,7 +353,7 @@ class LexicalAnalyzer():
                                     index -= 1
                                     break
                         # Caso não tenha ocorido nenhum erro
-                        else:
+                        elif(not goBreak):
                             # Escreve no arquivo caso a palavra seja reservada
                             if(self.isReserved(current_character)):
                                 write_file.write('{}|PRE {} \n'.format(str(line_index).zfill(2), current_character))
@@ -451,6 +464,7 @@ class LexicalAnalyzer():
                 line_index += 1
 
             # Fechando os arquivos e escrevendo os erros
+            write_file.write('$')
             read_file.close()
             write_file.close()
         return
