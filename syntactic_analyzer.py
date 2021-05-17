@@ -3,7 +3,7 @@
 # Kevin Cerqueira (@KevinCerqueira)
 # EXA 869 - MI - Processadores de Linguagem de Programacao
 # ==============================================================================
-# Implementação do Análisador Léxico de um compilador
+# Implementação do Análisador Sintático de um compilador
 
 # Bibliotecas para entrada e saida de arquivos
 import sys
@@ -22,10 +22,10 @@ class SyntacticAnalyzer():
     def openFiles(self, file_input):
         try:
             read_file = open(os.getcwd() + self.dir_input + file_input, 'r')
-            write_file = open(os.getcwd() + self.dir_output + str(file_input).replace('saida', 'saida_sintatica'), 'w')
+            write_file = open(os.getcwd() + self.dir_output + str(file_input).replace('saida_lexica', 'saida_sintatica'), 'w')
             return [read_file, write_file]
         except:
-            write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('saida', 'saida_sintatica'), 'w')
+            write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('saida_lexica', 'saida_sintatica'), 'w')
             write_file.write("[ERRO] Não foi possível ler o arquivo de entrada '{}'.".format(self.dir_input + file_input))
             sys.exit()
 	
@@ -87,39 +87,54 @@ class SyntacticAnalyzer():
     
     # Vai para o próximo identificador/token
     def nextIdentifier(self):
-        # if('$' in self.identifiers_file[self.line_index]):
-        #     self.write_file.write("ANALISE SINTATICA FINALIZADA")
-        #     self.Program()
-        print('next ',self.line_index, self.identifiers_file[self.line_index])
-        # if(self.line_index == 295):
-        #     print(self.identifiers_file[self.line_index+1000][self.identifiers_file[self.line_index].find(' ') + 1 : -2])
-        # self.write_file.write(self.identifiers_file[self.line_index])
-        self.line_index += 1
-        self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
-        self.hasException()
+        final = False
+        try:
+            if('$' in self.identifiers_file[self.line_index]):
+                final = True
+            self.line_index += 1
+            if(not '$' in self.identifiers_file[self.line_index]):
+                self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
+            else:
+                final = True
+            self.hasException()
+            if(not "[ERRO]" in self.identifiers_file[self.line_index]):
+                self.write_file.write(self.identifiers_file[self.line_index])
+        except:
+            if(not final):
+                self.write_file.write("\nERROS SINTATICOS - VERIFIQUE E TENTE NOVAMENTE")
+            self.write_file.close()
+            sys.exit()
+        
     # Vai para o próximo identificador/token
     def previousIdentifier(self):
-        # if('$' in self.identifiers_file[self.line_index]):
-        #     self.write_file.write("ANALISE SINTATICA FINALIZADA")
-        #     self.Program()
-        print('next ',self.line_index, self.identifiers_file[self.line_index])
-        # if(self.line_index == 220):
-        #     print(self.identifiers_file[self.line_index+1000][self.identifiers_file[self.line_index].find(' ') + 1 : -2])
-        # self.write_file.write(self.identifiers_file[self.line_index])
-        self.line_index -= 1
-        self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
-        self.hasException()
+        final = False
+        try:
+            if('$' in self.identifiers_file[self.line_index]):
+                final = True
+            self.line_index -= 1
+            if(not '$' in self.identifiers_file[self.line_index]):
+                self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
+            else:
+                final = True
+            self.hasException()
+            if(not "[ERRO]" in self.identifiers_file[self.line_index]):
+                self.write_file.write(self.identifiers_file[self.line_index])
+        except:
+            if(not final):
+                self.write_file.write("\nERROS SINTATICOS - VERIFIQUE E TENTE NOVAMENTE")
+            self.write_file.close()
+            sys.exit()
         
     # Pega o conteudo do indentificador/token
     def contentIdentifier(self):
-        # return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find('|')+1 : self.identifiers_file[self.line_index].find(' ')]
         return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') : self.identifiers_file[self.line_index].find('\n')]
     
     # Procura por um erro, caso haja vai para a próxima linha
     def hasException(self):
         if("[ERRO]" in self.identifiers_file[self.line_index]):
-            # self.write_file.write(self.identifiers_file[self.line_index])
-            self.line_index += 1
+            self.write_file.write("\nERROS LEXICOS - VERIFIQUE E TENTE NOVAMENTE")
+            #self.write_file.close()
+            sys.exit()
     
     # Procura por um erro, caso haja vai para a próxima linha
     def isEndFile(self):
@@ -128,7 +143,7 @@ class SyntacticAnalyzer():
         return False
     
     def exception(self, exception):
-        self.write_file.write("{} ERRO SINTATICO - {} [palavra problematica: {}]\n".format(self.line_index, exception, self.line_current))
+        self.write_file.write("{} ERRO SINTATICO - {} [recebido: {}]\n".format(self.line_index, exception, self.line_current))
         self.hasError = True
     
     def Program(self):
@@ -136,8 +151,8 @@ class SyntacticAnalyzer():
         
         self.StructDecl()
         self.ConstDecl()
-        self.table_global = self.VarDecl()
-        self.table_function = self.FunctionDeclaration()
+        self.VarDecl()
+        self.FunctionDeclaration()
         self.Start()
         
         if(self.hasError):
@@ -148,19 +163,9 @@ class SyntacticAnalyzer():
             else:
                 self.write_file.write("FIM NÃO ENCONTRADO")
         
-        # self.write_file.write('\n')
-        # self.write_file.write(self.table_struct)
-        # self.write_file.write('\n')
-        # self.write_file.write(self.table_const)
-        # self.write_file.write('\n')
-        # self.write_file.write(self.table_function)
-        # self.write_file.write('\n')
-        # self.write_file.write(self.table_start)
-        # self.write_file.write('\n')
-        
         self.write_file.close()
     
-    def StructDecl(self): # registro_declaracao
+    def StructDecl(self): 
         self.hasException()
         
         if('PRE struct' in self.identifiers_file[self.line_index]):
@@ -189,7 +194,7 @@ class SyntacticAnalyzer():
                     self.nextIdentifier()
                 return
                 
-    def Decls(self): # declaracao_reg
+    def Decls(self): 
         self.hasException()
         decl_return = {}
         
@@ -207,7 +212,7 @@ class SyntacticAnalyzer():
             while(not 'DEL }' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Decl(self): # declaracao
+    def Decl(self): 
         self.hasException()
         decls = {}
         decl_name = ''
@@ -231,7 +236,7 @@ class SyntacticAnalyzer():
         decls[decl_name] = decl_type
         return decls
         
-    def Type(self): # tipo_primitivo
+    def Type(self): 
         self.hasException()
         
         typeContent = ""
@@ -279,7 +284,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return typeContent
     
-    def ConstDecl(self): # constante_declaracao
+    def ConstDecl(self): 
         self.hasException()
         
         if('PRE const' in self.identifiers_file[self.line_index]):
@@ -305,7 +310,7 @@ class SyntacticAnalyzer():
             while(not 'PRE var' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Const(self): #declaracao_const
+    def Const(self): 
         self.hasException()
         const_inputs = {}
         const_values = []
@@ -336,7 +341,7 @@ class SyntacticAnalyzer():
             while(not 'DEL }' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Value(self): # valor_primitivo
+    def Value(self): 
         self.hasException()          
         value = ""
         
@@ -355,7 +360,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return value
         
-    def VarDecl(self): # variaveis_declaracao
+    def VarDecl(self): 
         self.hasException()
         return_vardecl = {}
         if('PRE var' in self.identifiers_file[self.line_index]):
@@ -384,7 +389,7 @@ class SyntacticAnalyzer():
               
         return return_vardecl
             
-    def VariablesList(self): # declaracao_var
+    def VariablesList(self): 
         self.hasException()
         var_globals = {}
         var_globals_content = []
@@ -463,7 +468,6 @@ class SyntacticAnalyzer():
                 'ART /' in self.identifiers_file[self.line_index] or
                 'ART *' in self.identifiers_file[self.line_index]
                 ):
-                print("TRO AQIOOOOOOOOOOOOOOOOOOOOO", self.contentIdentifier())
                 self.nextIdentifier()
                 if('REL =' in self.identifiers_file[self.line_index]):
                     self.nextIdentifier()
@@ -727,7 +731,7 @@ class SyntacticAnalyzer():
         
         return var_globals
             
-    def Aux(self): # identificador_deriva
+    def Aux(self): 
         self.hasException()
         return_identifier = []
         vector_matrix = 0
@@ -768,7 +772,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return return_identifier
         
-    def Matrix(self): # matriz
+    def Matrix(self): 
         self.hasException()
         
         if('DEL ;' in self.identifiers_file[self.line_index]):
@@ -794,7 +798,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ;' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Init(self): # inicializacao
+    def Init(self): 
         self.nextIdentifier()
         
         if("DEL ;" in self.identifiers_file[self.line_index]):
@@ -865,7 +869,6 @@ class SyntacticAnalyzer():
                                     # return
                                 if('DEL }' in self.identifiers_file[self.line_index]):
                                     self.nextIdentifier()
-                                    print("LLLLLLLLLLLLLLLLLLLLLLLLLL", self.contentIdentifier(), self.line_index)
                                     
                                     if('PRE function' in self.identifiers_file[self.line_index] or 'PRE procedure' in self.identifiers_file[self.line_index]):
                                         self.FunctionDeclaration()
@@ -899,7 +902,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return func_table
     
-    def ReturnType(self): # tipo_return TIRAMOS UMA PARTE DO COD ORIGIN
+    def ReturnType(self): # RETORNO
         self.hasException()
         
         return_type = []
@@ -929,7 +932,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return return_type
     
-    def Params(self): # decl_param
+    def Params(self): 
         self.hasException()
         params = []
         params_list = []
@@ -976,7 +979,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier
         return params
     
-    def MatrixIdentifier(self): # identificador_param_deriva
+    def MatrixIdentifier(self): 
         self.hasException()
         vector_matrix = 0
         
@@ -1010,7 +1013,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return vector_matrix
     
-    def MatrixParam(self): # matriz_param
+    def MatrixParam(self): 
         self.hasException()
         return_matrix = 0
         
@@ -1043,7 +1046,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
         return return_matrix
     
-    def Param(self): # deriva_param
+    def Param(self): 
         self.hasException()
         return_param = []
         
@@ -1054,7 +1057,7 @@ class SyntacticAnalyzer():
             return_param += self.Params()
         return return_param 
     
-    def FunctionParam(self, isProcedure): # deriva_cont_funcao
+    def FunctionParam(self, isProcedure): 
         self.hasException()
         
         if('PRE var' in self.identifiers_file[self.line_index]):
@@ -1109,7 +1112,7 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
                 
-    def Return(self): # return_deriva TIRAMOS UMA PARTE DO COD ORIGIN
+    def Return(self): # RETORNO
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1129,7 +1132,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ;' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def PreDecls(self): # decl_comandos
+    def PreDecls(self): 
         self.hasException()
         if('PRE return' in self.identifiers_file[self.line_index] or 'DEL }' in self.identifiers_file[self.line_index]):
             return
@@ -1156,8 +1159,6 @@ class SyntacticAnalyzer():
                 # self.nextIdentifier()
                 # self.previousIdentifier()
                 self.previousIdentifier()
-                # if('DEL ')
-                # print("_________TENAT AQUI", self.contentIdentifier(), self.line_index)
                 self.FunctionCall()
             
         else:
@@ -1174,7 +1175,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Cmd(self): # comandos
+    def Cmd(self): 
         self.hasException()
         
         if('PRE if' in self.identifiers_file[self.line_index]):
@@ -1203,7 +1204,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
                 
-    def Assign(self): # atribuicao
+    def Assign(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1254,7 +1255,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()     
                    
-    def Assigns(self): # atribuicao_deriva
+    def Assigns(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1272,7 +1273,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ;' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
                 
-    def FunctionCall(self): # chamada_funcao
+    def FunctionCall(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1297,7 +1298,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ;' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
                 
-    def ParamCall(self): # decl_param_chamada
+    def ParamCall(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1317,7 +1318,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ,' in self.identifiers_file[self.line_index] or not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
                 
-    def DeclCall(self): # decl_chamada
+    def DeclCall(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1336,7 +1337,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ,' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def ParamsCall(self): # chamada_param_deriva
+    def ParamsCall(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1349,7 +1350,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ,' in self.identifiers_file[self.line_index] or not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Reserved(self): # identificador_imp_arm_deriva
+    def Reserved(self): 
         self.hasException()
         
         if(
@@ -1432,7 +1433,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ]' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def If(self): # se_declaracao
+    def If(self): 
         self.hasException()
         hasErro = False
         
@@ -1484,7 +1485,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Else(self): # senao_decl
+    def Else(self): 
         self.hasException()
         hasErro = False
         
@@ -1507,7 +1508,6 @@ class SyntacticAnalyzer():
                 if('DEL }' in self.identifiers_file[self.line_index] or 'DEL ;' in self.identifiers_file[self.line_index]):
                     self.nextIdentifier()
                 else:
-                    # print("TA CAINDO AQUI _-_---------__-___--", self.contentIdentifier())
                     self.exception("ESPERADO '}'")
                     hasErro = True
             else:
@@ -1573,7 +1573,7 @@ class SyntacticAnalyzer():
                 not 'IDE' in self.identifiers_file[self.line_index]
             ):
                 self.nextIdentifier()
-    def For(self): # para_declaracao
+    def For(self): 
         self.hasException()
         hasErro = False
         hasErroIDE = False
@@ -1668,7 +1668,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
                 
-    def Read(self): # leia_declaracao
+    def Read(self): 
         self.hasException()
         hasErro = False
         
@@ -1706,7 +1706,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def FormalParameterListRead(self): # exp_leia
+    def FormalParameterListRead(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1720,7 +1720,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def AuxRead1(self): # exp_armazena
+    def AuxRead1(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -1731,7 +1731,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index] or 'DEL ,' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def AuxRead2(self): # exp_leia_deriva
+    def AuxRead2(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1744,7 +1744,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Print(self): # escreva_declaracao
+    def Print(self): 
         self.hasException()
         hasError = False
         
@@ -1782,7 +1782,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def AuxExpPrint(self): # exp_escreva
+    def AuxExpPrint(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1794,14 +1794,14 @@ class SyntacticAnalyzer():
             '(' in self.identifiers_file[self.line_index]  
         ):
             self.AuxExpPrint3()
-            self.AuxExpPrint2() # CASO DER MERDA TIRA AQUI
+            self.AuxExpPrint2() # ANALIZAR
             self.AuxExpPrint()
         else:
             self.exception("ESPERADO IDENTIFICADOR OU CADEIA DE CARACTERES")
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
         
-    def AuxExpPrint2(self): # exp_escreva_deriva
+    def AuxExpPrint2(self):
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1814,7 +1814,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def AuxExpPrint3(self): # exp_imprime
+    def AuxExpPrint3(self): 
         self.hasException()
         hasError = False
         
@@ -1842,7 +1842,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
         
-    def ConditionalExpression(self): # exp_rel_bol
+    def ConditionalExpression(self): 
         self.hasException()
         
         if(
@@ -1865,7 +1865,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def LogicalExpression(self): # exp_boll
+    def LogicalExpression(self): 
         self.hasException()
         
         if(
@@ -1889,7 +1889,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def AddExp(self): # exp_simples
+    def AddExp(self): 
         self.hasException()
         
         if('ART +' in self.identifiers_file[self.line_index] or 'ART -' in self.identifiers_file[self.line_index]):
@@ -1919,7 +1919,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Relational(self): # op_relacional
+    def Relational(self): 
         self.hasException()
         if(
             'REL <=' in self.identifiers_file[self.line_index] or
@@ -1941,7 +1941,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
        
-    def RelationalExpression(self): # exp_rel_deriva
+    def RelationalExpression(self): 
         self.hasException()
         
         if('DEL )' in self.identifiers_file[self.line_index]):
@@ -1957,7 +1957,7 @@ class SyntacticAnalyzer():
             while(not 'DEL ' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Plus(self): # op_ss
+    def Plus(self): 
         self.hasException()
         
         if(
@@ -1974,7 +1974,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Term(self): # termo
+    def Term(self): 
         self.hasException()
         
         if(
@@ -1992,7 +1992,7 @@ class SyntacticAnalyzer():
             while(not 'ART +' in self.identifiers_file[self.line_index] or not 'ART -' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Terms(self): # termo_deriva
+    def Terms(self): 
         self.hasException()
         
         if(
@@ -2030,7 +2030,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Logical(self): # op_bolleano
+    def Logical(self): 
         self.hasException()
         
         if('LOG &&' in self.identifiers_file[self.line_index] or 'LOG ||' in self.identifiers_file[self.line_index]):
@@ -2046,7 +2046,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Factor(self): # fator
+    def Factor(self): 
         self.hasException()
         
         if('IDE' in self.identifiers_file[self.line_index]):
@@ -2087,7 +2087,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
                 
-    def FactorAux(self): # fator_deriva
+    def FactorAux(self): 
         self.hasException()
         
         if(
@@ -2131,7 +2131,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Sum(self): # op_soma_deriva
+    def Sum(self): 
         self.hasException()
         
         if('ART +' in self.identifiers_file[self.line_index]):
@@ -2157,7 +2157,7 @@ class SyntacticAnalyzer():
             ):
                 self.nextIdentifier()
     
-    def Subtraction(self): # op_sub_deriva
+    def Subtraction(self):
         self.hasException()
         
         if('ART -' in self.identifiers_file[self.line_index]):
@@ -2207,7 +2207,7 @@ class SyntacticAnalyzer():
             while(not 'DEL )' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def Start(self): # algoritmo_declaracao
+    def Start(self): 
         self.hasException()
         
         if('PRE start' in self.identifiers_file[self.line_index]):
@@ -2241,12 +2241,11 @@ class SyntacticAnalyzer():
                     self.nextIdentifier()
         else:
             # self.previousIdentifier()
-            print("TESTE AQUI__________________________________________", self.contentIdentifier())
             self.exception("ESPERADO 'start'")
             while(not '$' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
     
-    def StartAux(self): # deriva_cont_principal
+    def StartAux(self): 
         self.hasException()
         
         if('DEL }' in self.identifiers_file[self.line_index]):
@@ -2284,6 +2283,6 @@ class SyntacticAnalyzer():
                 self.nextIdentifier()
                 
 # Função main, cria um objeto e inicia o Analisador Sintatico
-if __name__ == '__main__':
-    analyzer = SyntacticAnalyzer()
-    sys.exit()
+# if __name__ == '__main__':
+#     analyzer = SyntacticAnalyzer()
+#     sys.exit()

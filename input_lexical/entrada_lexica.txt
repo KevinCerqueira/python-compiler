@@ -1,0 +1,96 @@
+struct Carro{
+	string placa;
+	string modelo;
+	int qtd_portas;
+	int qtd_valvulas;
+	real velocidade_max;
+}
+const{
+real c;
+boolean teste;
+int x;
+}
+var{
+boolean teste;
+int x;
+}
+procedure acelerar(real velocidade){
+	var{
+		boolean teste = false;
+		int x;
+		struct Carro carro;
+	}
+	global.a = 12;
+	local.a = 15;
+	b = 18;
+	j = "hello";
+	if(b > c && c > a || a > b)then{
+		carro.velocidade = 200;
+		if(carro.placa == "jjj")then{
+			carro.modelo = "xesquedele";
+		}else{
+			ligado(true);
+		}
+	}
+	acelerar(x);
+	
+}
+
+function boolean ligado(boolean ligado, string nome, int ano){
+	var{
+		real a;
+		boolean teste = false;
+		int x;
+		struct Carro carro;
+	}
+	global.a += 12;
+	local.a /= 15;
+	b = 18;
+	x;
+	y;
+	c = -3;
+	j = "hello";
+	if(b > c && c <= a || a != b)then{
+		carro.velocidade = 200;
+		if(carro.placa == "jjj")then{
+			carro.modelo = "xesquedele";
+		}else{
+			ligado(true);
+		}
+	}
+	acelerar(x);
+	return true;
+}
+
+start(){
+	var{
+		real a;
+		boolean teste = false;
+		int x;
+		struct Carro carro;
+		int matriz[10];
+		struct Uno carro2[5];
+		struct Uno carro2[x];
+	}
+	if(b > c && c >= a || a < b)then{
+		carro.velocidade = 200;
+		if(carro.placa == "jjj")then{
+			carro.modelo = "xesquedele";
+		}else{
+			ligado(c);
+		}
+	}
+	while(b > c && c > a || a > b)then{
+		carro.velocidade = 200;
+		while(carro.placa == "jjj")then{
+			carro.modelo = "xesquedele";
+		}
+		while(true){
+			ligado(c);
+			print("loop inf");
+			read(a);
+		}
+	}
+	
+	acelerar(x);
+}

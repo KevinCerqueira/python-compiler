@@ -122,10 +122,10 @@ class LexicalAnalyzer():
     def openFiles(self, file_input):
         try:
             read_file = open(os.getcwd() + self.dir_input + file_input, 'r')
-            write_file = open(os.getcwd() + self.dir_output + str(file_input).replace('entrada', 'saida'), 'w')
+            write_file = open(os.getcwd() + self.dir_output + str(file_input).replace('entrada_lexica', 'saida_lexica'), 'w')
             return [read_file, write_file]
         except:
-            write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('entrada', 'saida'), 'w')
+            write_file = open(os.getcwd() + self.dir_input + str(file_input).replace('entrada_lexica', 'saida_lexica'), 'w')
             write_file.write("[ERRO] Não foi possível ler o arquivo de entrada '{}'.".format(self.dir_input + file_input))
             sys.exit()
 
@@ -469,7 +469,7 @@ class LexicalAnalyzer():
             write_file.close()
         return
 # Função main, cria um objeto e inicia o Analisador Léxico
-if __name__ == '__main__':
-    analyzer = LexicalAnalyzer()
-    analyzer.start()
-    sys.exit()
+# if __name__ == '__main__':
+#     analyzer = LexicalAnalyzer()
+#     analyzer.start()
+#     sys.exit()
