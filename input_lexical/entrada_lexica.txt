@@ -20,7 +20,7 @@ procedure acelerar(real velocidade){
 		int x;
 		struct Carro carro;
 	}
-	global.a = 12;
+	global.a = 12.45;
 	local.a = 15;
 	b = 18;
 	j = "hello";
