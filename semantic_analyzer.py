@@ -156,12 +156,12 @@ class SemanticAnalyzer():
 						if('REL =' in self.identifiers_file[self.line_index]):
 							self.nextIdentifier()
 							if(
-								identifier_type == 'PRE int' and 'NRO' in self.identifiers_file[self.line_index] or
-								identifier_type == 'PRE real' and 'NRO' in self.identifiers_file[self.line_index] or
-								identifier_type == 'PRE string' and 'SIM' in self.identifiers_file[self.line_index] or
-								identifier_type == 'PRE string' and 'CAD' in self.identifiers_file[self.line_index] or
-								identifier_type == 'PRE boolean' and 'PRE true' in self.identifiers_file[self.line_index] or
-								identifier_type == 'PRE boolean' and 'PRE false' in self.identifiers_file[self.line_index]
+								(identifier_type == 'PRE int' and 'NRO' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE real' and 'NRO' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE string' and 'SIM' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE string' and 'CAD' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE boolean' and 'PRE true' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE boolean' and 'PRE false' in self.identifiers_file[self.line_index])
 							):
 								self.const_table[identifier_input] = [identifier_type, 'input_const', 'global']
 							else:
@@ -170,4 +170,67 @@ class SemanticAnalyzer():
 							self.exception("{} JA FOI DECLARADO EM 'const'".format(identifier_input))
 			self.nextIdentifier()
 	
+	def var_table(self):
+		category = ""
+		while(not 'DEL }' in self.identifiers_file[self.line_index]):
+			if(
+				'PRE string' in self.identifiers_file[self.line_index] or
+				'PRE int' in self.identifiers_file[self.line_index] or
+				'PRE real' in self.identifiers_file[self.line_index] or
+				'PRE boolean' in self.identifiers_file[self.line_index] or
+				'IDE' in self.identifiers_file[self.line_index]
+			):
+				if('DEL' in self.identifiers_file[self.line_index]):
+					category = 'const_var'
+				else:
+					category = 'global_var'
+					
+				identifier_type = self.contentIdentifier()
+				self.nextIdentifier()
+				
+				if('IDE' in self.identifiers_file[self.line_index]):
+					identifier_input = self.contentIdentifier()
+					self.nextIdentifier()
+					if(not self.var_globals_table.has_key(identifier_input)):
+						if('DEL [' in self.identifiers_file[self.line_index]):
+							self.nextIdentifier()
+							category = 'vector_var'
+							if('NRO' in self.identifiers_file[self.line_index]):
+								self.nextIdentifier()
+								if('DEL ]' in self.identifiers_file[self.line_index]):
+									self.nextIdentifier()
+									if('DEL [' in self.identifiers_file[self.line_index]):
+										self.nextIdentifier()
+										category = 'matrix_var'
+										if('NRO' in self.identifiers_file[self.line_index]):
+											self.nextIdentifier()
+										if('DEL ]' in self.identifiers_file[self.line_index]):
+											self.nextIdentifier()
+						
+						if('DEL ;' in self.identifiers_file[self.line_index]):
+							self.var_globals_table[identifier_input] = [identifier_type, category, 'global']
+						elif('REL =' in self.identifiers_file[self.line_index]):
+							self.nextIdentifier()
+							if(
+								(identifier_type == 'PRE int' and 'NRO' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE real' and 'NRO' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE string' and 'SIM' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE string' and 'CAD' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE boolean' and 'PRE true' in self.identifiers_file[self.line_index]) or
+								(identifier_type == 'PRE boolean' and 'PRE false' in self.identifiers_file[self.line_index])
+							):
+								self.var_globals_table[identifier_input] = [identifier_type, category, 'global']
+							else:
+								self.exception("ATRIBUIÇÃO NÃO CONDIZENTE COM O TIPO DA VARIAVEL '{}'".format(identifier_input))
+					else:
+						self.exception("{} JA FOI DECLARADO NAS VARIAVEIS GLOBAIS".format(identifier_input))
+			self.nextIdentifier()
+			
+	def function_table(self):
+		self.nextIdentifier()
 	
+	def start_table(self):
+		self.nextIdentifier()
+		
+	def start(self):
+		pass

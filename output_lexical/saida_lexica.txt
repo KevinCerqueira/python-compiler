@@ -64,7 +64,7 @@
 23|DEL . 
 23|IDE a 
 23|REL = 
-23|NRO 12 
+23|NRO 12.45 
 23|DEL ; 
 24|PRE local 
 24|DEL . 
