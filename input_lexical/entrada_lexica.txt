@@ -1,6 +1,7 @@
 struct Carro{
 	string placa;
 	string modelo;
+	string modelo;
 	int qtd_portas;
 	int qtd_valvulas;
 	real velocidade_max;

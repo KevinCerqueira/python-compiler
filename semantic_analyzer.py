@@ -81,15 +81,15 @@ class SemanticAnalyzer():
 
 			self.line_index = 0
 			self.line_current = ""
+			self.write_file.write(self.identifiers_file[self.line_index])
+			self.start()
+			# self.semantic_table['struct'] = self.struct_table
+			# self.semantic_table['const'] = self.const_table
+			# self.semantic_table['var_globals'] = self.var_globals_table
+			# self.semantic_table['function'] = self.function_table
+			# self.semantic_table['start'] = self.start_table
 			
-			self.semantic_table['struct'] = self.struct_table
-			self.semantic_table['const'] = self.const_table
-			self.semantic_table['var_globals'] = self.var_globals_table
-			self.semantic_table['function'] = self.function_table
-			self.semantic_table['start'] = self.start_table
-			
-			print(self.semantic_table)
-			has_erro = self.start()
+			# print(self.semantic_table)
 			self.write_file.close()
 			read_file.close()
 		sys.exit()	
@@ -97,25 +97,39 @@ class SemanticAnalyzer():
 	
 	# Pega o conteudo do indentificador/token
 	def contentIdentifier(self):
-		return self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') : self.identifiers_file[self.line_index].find('\n')]
+		return self.currentIdentifier()[self.currentIdentifier().find(' ') : self.currentIdentifier().find('\n')]
 
 	# Vai para o próximo identificador/token
 	def nextIdentifier(self):
 		final = False	
 		try:
-			if('$' in self.identifiers_file[self.line_index]):
+			if('$' in self.currentIdentifier()):
 				final = True
 			self.line_index += 1
-			if(not '$' in self.identifiers_file[self.line_index]):
-				self.line_current = self.identifiers_file[self.line_index][self.identifiers_file[self.line_index].find(' ') + 1 : -2]
-			else:
-				final = True
-			self.hasException()
-			if(not "ERRO" in self.identifiers_file[self.line_index]):
-				self.write_file.write(self.identifiers_file[self.line_index])
+			self.line_current = self.currentIdentifier()[self.currentIdentifier().find(' ') + 1 : -2]
+			if("ERRO" in self.currentIdentifier()):
+				self.write_file.write("\nERROS LEXICOS/SINTATICOS - VERIFIQUE E TENTE NOVAMENTE")
+				sys.exit()
+			self.write_file.write(self.identifiers_file[self.line_index])
 		except:
 			if(not final):
-				self.write_file.write("\nERROS SEMANTICOS - VERIFIQUE E TENTE NOVAMENTE")
+				self.write_file.write("\nERROS SEMANTICOS1 - VERIFIQUE E TENTE NOVAMENTE")
+			self.write_file.close()
+			sys.exit()
+	
+	def currentIdentifier(self):
+		final = False	
+		try:
+			if('$' in self.identifiers_file[self.line_index]):
+				final = True
+				self.write_file.close()
+				sys.exit()
+			else:
+				# print(self.identifiers_file[self.line_index], self.line_index)
+				return self.identifiers_file[self.line_index]
+		except:
+			if(not final):
+				self.write_file.write("\nERROS SEMANTICOS32 - VERIFIQUE E TENTE NOVAMENTE")
 			self.write_file.close()
 			sys.exit()
 			
@@ -123,52 +137,52 @@ class SemanticAnalyzer():
 		self.write_file.write("{} ERRO SEMANTICO - {} [onde: {}]\n".format(self.line_index, exception, self.line_current))
 		self.hasError = True
 		
-	def struct_table(self):
-		if('IDE' in self.identifiers_file[self.line_index]):
+	def struct(self):
+		if('IDE' in self.currentIdentifier()):
 			identifier_struct = self.contentIdentifier()
 			inputs_struct = {}
 			self.nextIdentifier()
-			while(not 'DEL }' in self.identifiers_file[self.line_index]):
+			while(not 'DEL }' in self.currentIdentifier()):
 				if(
-					'PRE string' in self.identifiers_file[self.line_index] or
-					'PRE int' in self.identifiers_file[self.line_index] or
-					'PRE real' in self.identifiers_file[self.line_index] or
-					'PRE boolean' in self.identifiers_file[self.line_index]
+					'PRE string' in self.currentIdentifier() or
+					'PRE int' in self.currentIdentifier() or
+					'PRE real' in self.currentIdentifier() or
+					'PRE boolean' in self.currentIdentifier()
 				):
 					identifier_type = self.contentIdentifier()
 					self.nextIdentifier()
-					if('IDE' in self.identifiers_file[self.line_index]):
+					if('IDE' in self.currentIdentifier()):
 						identifier_input = self.contentIdentifier()
 						
-						if(not self.struct_table.get(identifier_type).has_key(identifier_input)):
+						if(not bool(self.struct_table) or not self.struct_table.get(identifier_type).has_key(identifier_input)):
 							inputs_struct[identifier_input] = [identifier_type, 'input_struct']
 						else:
 							self.exception("{} JA FOI DECLARADO EM '{}'".format(identifier_input, identifier_struct))
 				self.nextIdentifier()
 	
-	def const_table(self):
-		while(not 'DEL }' in self.identifiers_file[self.line_index]):
+	def const(self):
+		while(not 'DEL }' in self.currentIdentifier()):
 			if(
-				'PRE string' in self.identifiers_file[self.line_index] or
-				'PRE int' in self.identifiers_file[self.line_index] or
-				'PRE real' in self.identifiers_file[self.line_index] or
-				'PRE boolean' in self.identifiers_file[self.line_index]
+				'PRE string' in self.currentIdentifier() or
+				'PRE int' in self.currentIdentifier() or
+				'PRE real' in self.currentIdentifier() or
+				'PRE boolean' in self.currentIdentifier()
 			):
 				identifier_type = self.contentIdentifier()
 				self.nextIdentifier()
-				if('IDE' in self.identifiers_file[self.line_index]):
+				if('IDE' in self.currentIdentifier()):
 					identifier_input = self.contentIdentifier()
 					self.nextIdentifier()
-					if(not self.const_table.has_key(identifier_input)):
-						if('REL =' in self.identifiers_file[self.line_index]):
+					if(not bool(self.struct_table) or not self.const_table.has_key(identifier_input)):
+						if('REL =' in self.currentIdentifier()):
 							self.nextIdentifier()
 							if(
-								(identifier_type == 'PRE int' and 'NRO' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE real' and 'NRO' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE string' and 'SIM' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE string' and 'CAD' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE boolean' and 'PRE true' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE boolean' and 'PRE false' in self.identifiers_file[self.line_index])
+								(identifier_type == 'PRE int' and 'NRO' in self.currentIdentifier()) or
+								(identifier_type == 'PRE real' and 'NRO' in self.currentIdentifier()) or
+								(identifier_type == 'PRE string' and 'SIM' in self.currentIdentifier()) or
+								(identifier_type == 'PRE string' and 'CAD' in self.currentIdentifier()) or
+								(identifier_type == 'PRE boolean' and 'PRE true' in self.currentIdentifier()) or
+								(identifier_type == 'PRE boolean' and 'PRE false' in self.currentIdentifier())
 							):
 								self.const_table[identifier_input] = [identifier_type, 'input_const', 'global']
 							else:
@@ -177,17 +191,17 @@ class SemanticAnalyzer():
 							self.exception("{} JA FOI DECLARADO EM 'const'".format(identifier_input))
 			self.nextIdentifier()
 	
-	def var_table(self):
+	def var(self):
 		category = ""
-		while(not 'DEL }' in self.identifiers_file[self.line_index]):
+		while(not 'DEL }' in self.currentIdentifier()):
 			if(
-				'PRE string' in self.identifiers_file[self.line_index] or
-				'PRE int' in self.identifiers_file[self.line_index] or
-				'PRE real' in self.identifiers_file[self.line_index] or
-				'PRE boolean' in self.identifiers_file[self.line_index] or
-				'IDE' in self.identifiers_file[self.line_index]
+				'PRE string' in self.currentIdentifier() or
+				'PRE int' in self.currentIdentifier() or
+				'PRE real' in self.currentIdentifier() or
+				'PRE boolean' in self.currentIdentifier() or
+				'IDE' in self.currentIdentifier()
 			):
-				if('DEL' in self.identifiers_file[self.line_index]):
+				if('DEL' in self.currentIdentifier()):
 					category = 'const_var'
 				else:
 					category = 'global_var'
@@ -195,36 +209,36 @@ class SemanticAnalyzer():
 				identifier_type = self.contentIdentifier()
 				self.nextIdentifier()
 				
-				if('IDE' in self.identifiers_file[self.line_index]):
+				if('IDE' in self.currentIdentifier()):
 					identifier_input = self.contentIdentifier()
 					self.nextIdentifier()
-					if(not self.var_globals_table.has_key(identifier_input)):
-						if('DEL [' in self.identifiers_file[self.line_index]):
+					if(not bool(self.struct_table) or not self.var_globals_table.has_key(identifier_input)):
+						if('DEL [' in self.currentIdentifier()):
 							self.nextIdentifier()
 							category = 'vector_var'
-							if('NRO' in self.identifiers_file[self.line_index]):
+							if('NRO' in self.currentIdentifier()):
 								self.nextIdentifier()
-								if('DEL ]' in self.identifiers_file[self.line_index]):
+								if('DEL ]' in self.currentIdentifier()):
 									self.nextIdentifier()
-									if('DEL [' in self.identifiers_file[self.line_index]):
+									if('DEL [' in self.currentIdentifier()):
 										self.nextIdentifier()
 										category = 'matrix_var'
-										if('NRO' in self.identifiers_file[self.line_index]):
+										if('NRO' in self.currentIdentifier()):
 											self.nextIdentifier()
-										if('DEL ]' in self.identifiers_file[self.line_index]):
+										if('DEL ]' in self.currentIdentifier()):
 											self.nextIdentifier()
 						
-						if('DEL ;' in self.identifiers_file[self.line_index]):
+						if('DEL ;' in self.currentIdentifier()):
 							self.var_globals_table[identifier_input] = [identifier_type, category, 'global']
-						elif('REL =' in self.identifiers_file[self.line_index]):
+						elif('REL =' in self.currentIdentifier()):
 							self.nextIdentifier()
 							if(
-								(identifier_type == 'PRE int' and 'NRO' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE real' and 'NRO' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE string' and 'SIM' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE string' and 'CAD' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE boolean' and 'PRE true' in self.identifiers_file[self.line_index]) or
-								(identifier_type == 'PRE boolean' and 'PRE false' in self.identifiers_file[self.line_index])
+								(identifier_type == 'PRE int' and 'NRO' in self.currentIdentifier()) or
+								(identifier_type == 'PRE real' and 'NRO' in self.currentIdentifier()) or
+								(identifier_type == 'PRE string' and 'SIM' in self.currentIdentifier()) or
+								(identifier_type == 'PRE string' and 'CAD' in self.currentIdentifier()) or
+								(identifier_type == 'PRE boolean' and 'PRE true' in self.currentIdentifier()) or
+								(identifier_type == 'PRE boolean' and 'PRE false' in self.currentIdentifier())
 							):
 								self.var_globals_table[identifier_input] = [identifier_type, category, 'global']
 							else:
@@ -233,30 +247,35 @@ class SemanticAnalyzer():
 						self.exception("{} JA FOI DECLARADO NAS VARIAVEIS GLOBAIS".format(identifier_input))
 			self.nextIdentifier()
 			
-	def function_table(self):
+	def function(self):
 		self.nextIdentifier()
 	
-	def start_table(self):
+	def start(self):
 		self.nextIdentifier()
 		
-	def start(self):
-		while(not "$" in self.identifiers_file[self.line_index]):
-			if('PRE struct' in self.identifiers_file[self.line_index]):
+	def start(self):		
+		while(not "$" in self.currentIdentifier()):
+			print('WHILE')
+			
+			if('PRE struct' in self.currentIdentifier()):
 				self.nextIdentifier()
-				self.struct_table()
-			elif('PRE const' in self.identifiers_file[self.line_index]):
+				self.struct()
+			elif('PRE const' in self.currentIdentifier()):
 				self.nextIdentifier()
-				self.const_table()
-			elif('PRE function' in self.identifiers_file[self.line_index]):
+				self.const()
+			elif('PRE function' in self.currentIdentifier()):
 				self.nextIdentifier()
-				self.function_table()
-			elif('PRE start' in self.identifiers_file[self.line_index]):
+				self.function()
+			elif('PRE start' in self.currentIdentifier()):
 				self.nextIdentifier()
-				self.star_table()
+				self.start()
+			else:
+				self.nextIdentifier()
 		if(self.hasError):
-			self.exception("ERROS SEMANTICOS - VERIFIQUE E TENTE NOVAMENTE")
+			self.exception("ERROS SEMANTICOS3 - VERIFIQUE E TENTE NOVAMENTE")
 			return False
 		else:
 			self.write_file("CADEIA RECONHECIDA COM SUCESSO")
 			return True
-			
+
+SemanticAnalyzer()
