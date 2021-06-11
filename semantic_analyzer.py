@@ -68,7 +68,7 @@ class SemanticAnalyzer():
 	def __init__(self):
 		# Arquivos do programa
 		files_programs = self.openPrograms()
-
+		
 		# Laço de repetição que percorre todos os arquivos encontrados na 
 		# pasta de saida do analisador lexico (output_lexical/saidaX.txt).
 		for file_program in files_programs:
@@ -81,12 +81,19 @@ class SemanticAnalyzer():
 
 			self.line_index = 0
 			self.line_current = ""
-
+			
 			self.semantic_table['struct'] = self.struct_table
 			self.semantic_table['const'] = self.const_table
 			self.semantic_table['var_globals'] = self.var_globals_table
 			self.semantic_table['function'] = self.function_table
 			self.semantic_table['start'] = self.start_table
+			
+			print(self.semantic_table)
+			has_erro = self.start()
+			self.write_file.close()
+			read_file.close()
+		sys.exit()	
+		
 	
 	# Pega o conteudo do indentificador/token
 	def contentIdentifier(self):
@@ -233,4 +240,23 @@ class SemanticAnalyzer():
 		self.nextIdentifier()
 		
 	def start(self):
-		pass
+		while(not "$" in self.identifiers_file[self.line_index]):
+			if('PRE struct' in self.identifiers_file[self.line_index]):
+				self.nextIdentifier()
+				self.struct_table()
+			elif('PRE const' in self.identifiers_file[self.line_index]):
+				self.nextIdentifier()
+				self.const_table()
+			elif('PRE function' in self.identifiers_file[self.line_index]):
+				self.nextIdentifier()
+				self.function_table()
+			elif('PRE start' in self.identifiers_file[self.line_index]):
+				self.nextIdentifier()
+				self.star_table()
+		if(self.hasError):
+			self.exception("ERROS SEMANTICOS - VERIFIQUE E TENTE NOVAMENTE")
+			return False
+		else:
+			self.write_file("CADEIA RECONHECIDA COM SUCESSO")
+			return True
+			
