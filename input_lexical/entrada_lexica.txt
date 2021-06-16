@@ -7,9 +7,9 @@ struct Carro{
 	real velocidade_max;
 }
 const{
-real c;
-boolean teste;
-int x;
+real c = 10;
+boolean teste = 11;
+int x = 10;
 }
 var{
 boolean teste;

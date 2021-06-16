@@ -1,4 +1,3 @@
-01|PRE struct 
 01|IDE Carro 
 01|DEL { 
 02|PRE string 
@@ -24,12 +23,18 @@
 09|DEL { 
 10|PRE real 
 10|IDE c 
+10|REL = 
+10|NRO 10 
 10|DEL ; 
 11|PRE boolean 
 11|IDE teste 
+11|REL = 
+11|NRO 11 
 11|DEL ; 
 12|PRE int 
 12|IDE x 
+12|REL = 
+12|NRO 10 
 12|DEL ; 
 13|DEL } 
 14|PRE var 
@@ -190,7 +195,7 @@
 49|DEL ; 
 50|IDE x 
 50|DEL ; 
-189 ERRO SINTATICO - ESPERADO ATRIBUICAO [recebido: ;]
+195 ERRO SINTATICO - ESPERADO ATRIBUICAO [recebido: ;]
 51|IDE y 
 51|DEL ; 
 52|IDE c 

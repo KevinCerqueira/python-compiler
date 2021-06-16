@@ -194,7 +194,7 @@ class SyntacticAnalyzer():
                     self.nextIdentifier()
                 return
                 
-    def Decls(self): 
+    def Decls(self, const = False): 
         self.hasException()
         decl_return = {}
         
@@ -203,7 +203,34 @@ class SyntacticAnalyzer():
             
         decl_return = self.Decl()
         
-        if('DEL ;' in self.identifiers_file[self.line_index]):
+        if(const):
+            if('REL =' in self.identifiers_file[self.line_index]):
+                self.nextIdentifier()
+                if(
+                    'NRO' in self.identifiers_file[self.line_index] or
+                    'true' in self.identifiers_file[self.line_index] or
+                    'false' in self.identifiers_file[self.line_index] or
+                    'CAD' in self.identifiers_file[self.line_index] or
+                    'SIM' in self.identifiers_file[self.line_index]
+                ):
+                    self.nextIdentifier()
+                    if('DEL ;' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+                        decl_return.update(self.Decls(True))
+                        return decl_return
+                    else:
+                        self.exception("ESPERADO ';'")
+                        while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                            self.nextIdentifier()
+                else:
+                    self.exception("ESPERADO UM VALOR A SER ATRIBUIDO NA CONSTANTE")
+                    while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                        self.nextIdentifier()
+            else:
+                self.exception("ESPERADO '='")
+                while(not 'DEL }' in self.identifiers_file[self.line_index]):
+                    self.nextIdentifier()
+        elif('DEL ;' in self.identifiers_file[self.line_index]):
             self.nextIdentifier()
             decl_return.update(self.Decls())
             return decl_return
@@ -292,7 +319,7 @@ class SyntacticAnalyzer():
             if('DEL {' in self.identifiers_file[self.line_index]):
                 self.nextIdentifier()
                 if(not 'DEL }' in self.identifiers_file[self.line_index]):
-                    self.table_const = self.Decls()
+                    self.table_const = self.Decls(True)
                 if('DEL }' in self.identifiers_file[self.line_index]):
                     self.nextIdentifier()
                 else:
